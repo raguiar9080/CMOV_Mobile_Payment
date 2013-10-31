@@ -51,7 +51,7 @@ public class LoginActivity extends Activity {
 		}
 		@Override
 		protected JSONObject doInBackground(String... params) {
-			Network connection = new Network("http://192.168.1.2:81/client/login", "POST", elems);
+			Network connection = new Network(Common.SERVER_URL + "client/login", "POST", elems);
 			connection.run();
 			return connection.getResultObject();
 		}
@@ -93,7 +93,7 @@ public class LoginActivity extends Activity {
 		}
 		@Override
 		protected JSONObject doInBackground(String... params) {
-			Network connection = new Network("http://192.168.1.2:81/client/create", "POST", elems);
+			Network connection = new Network(Common.SERVER_URL + "client/create", "POST", elems);
 			connection.run();
 			return connection.getResultObject();
 		}

@@ -238,7 +238,7 @@ app.post('/listTickets', function (req, res) {
 // POST /buy PARAMS: cid:client id, t1:nr de t1s, t2:nr de t2s,t3:nr de t3s
 // returns {t1:21,t2:32,t3:43}
 app.post('/buyTickets', function (req, res) {
-	console.log('Buyng tickets for:' + req.body.cid);
+	console.log('Buyng tickets for:' + req.body.cid + "t1:" + req.body.t1 + "t2:" + req.body.t2 + "t3:" + req.body.t3);
 	var cid = Number(req.body.cid),
 	t1=Number(req.body.t1),
 	t2=Number(req.body.t2),

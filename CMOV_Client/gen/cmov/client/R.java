@@ -24,7 +24,7 @@ public final class R {
         public static final int ic_launcher=0x7f020000;
     }
     public static final class id {
-        public static final int action_settings=0x7f08001b;
+        public static final int action_settings=0x7f08001e;
         public static final int buyTickets=0x7f080018;
         public static final int buybtn=0x7f080009;
         public static final int createLoginUser=0x7f080015;
@@ -46,6 +46,9 @@ public final class R {
         public static final int textView3=0x7f080003;
         public static final int textView4=0x7f080012;
         public static final int textView5=0x7f080006;
+        public static final int useT1=0x7f08001b;
+        public static final int useT2=0x7f08001c;
+        public static final int useT3=0x7f08001d;
         public static final int useTicket=0x7f080019;
         public static final int userCardType=0x7f080013;
         public static final int userName=0x7f08000e;
@@ -58,6 +61,7 @@ public final class R {
         public static final int list_tickets=0x7f030001;
         public static final int login=0x7f030002;
         public static final int splash_screen=0x7f030003;
+        public static final int use_tickets=0x7f030004;
     }
     public static final class menu {
         public static final int main=0x7f070000;

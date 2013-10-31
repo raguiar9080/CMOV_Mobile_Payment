@@ -100,7 +100,7 @@ public class BuyTickets extends Activity {
 		}
 		@Override
 		protected JSONObject doInBackground(Void... params) {
-			Network connection = new Network("http://192.168.1.2:81/buyTickets", "POST", elems);
+			Network connection = new Network(Common.SERVER_URL + "buyTickets", "POST", elems);
 			connection.run();
 			return connection.getResultObject();
 		}

@@ -51,6 +51,8 @@ public class SplashScreen extends Activity {
 		final Button usetickets = (Button) findViewById(R.id.useTicket);
 		usetickets.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View v) {
+				Intent intent = new Intent(getBaseContext(), UseTickets.class);
+				startActivity(intent);
 			}
 		});
 
