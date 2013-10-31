@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.app.Activity;
@@ -43,39 +44,39 @@ public class BuyTickets extends Activity {
 				new AsyncBuyTickets().execute();
 			}
 		});
-		
+
 		final SeekBar t1tickets = (SeekBar) findViewById(R.id.seekBarT1);
 		t1tickets.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
 			@Override
 			public void onProgressChanged(SeekBar arg0, int arg1, boolean arg2) {
 				final TextView label = (TextView) findViewById(R.id.t1label);
-				label.setText((new Integer(arg1)).toString());
+				label.setText((Integer.valueOf(arg1)).toString());
 			}
 			@Override
 			public void onStartTrackingTouch(SeekBar seekBar) {}
 			@Override
 			public void onStopTrackingTouch(SeekBar seekBar) {}
 		});
-		
+
 		final SeekBar t2tickets = (SeekBar) findViewById(R.id.seekBarT2);
 		t2tickets.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
 			@Override
 			public void onProgressChanged(SeekBar arg0, int arg1, boolean arg2) {
 				final TextView label = (TextView) findViewById(R.id.t2label);
-				label.setText((new Integer(arg1)).toString());
+				label.setText((Integer.valueOf(arg1)).toString());
 			}
 			@Override
 			public void onStartTrackingTouch(SeekBar seekBar) {}
 			@Override
 			public void onStopTrackingTouch(SeekBar seekBar) {}
 		});
-		
+
 		final SeekBar t3tickets = (SeekBar) findViewById(R.id.seekBarT3);
 		t3tickets.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
 			@Override
 			public void onProgressChanged(SeekBar arg0, int arg1, boolean arg2) {
 				final TextView label = (TextView) findViewById(R.id.t3label);
-				label.setText((new Integer(arg1)).toString());
+				label.setText((Integer.valueOf(arg1)).toString());
 			}
 			@Override
 			public void onStartTrackingTouch(SeekBar seekBar) {}
@@ -93,18 +94,28 @@ public class BuyTickets extends Activity {
 			elems.add(new BasicNameValuePair("t1",(String) ((TextView) findViewById(R.id.t1label)).getText()));
 			elems.add(new BasicNameValuePair("t2",(String) ((TextView) findViewById(R.id.t2label)).getText()));
 			elems.add(new BasicNameValuePair("t3",(String) ((TextView) findViewById(R.id.t3label)).getText()));
-			
-			
+
+
 			super.onPreExecute();
 		}
 		@Override
 		protected JSONObject doInBackground(Void... params) {
-			Network connection = new Network("http://10.13.37.34:81/buyTickets", "POST", elems);
+			Network connection = new Network("http://192.168.1.2:81/buyTickets", "POST", elems);
 			connection.run();
 			return connection.getResultObject();
 		}
 		protected void onPostExecute(JSONObject result) {
-			Toast.makeText(getApplicationContext(),result.toString() , Toast.LENGTH_LONG).show();
+			try {
+				if (result == null)
+					Toast.makeText(getBaseContext(), "Error Sending Data", Toast.LENGTH_LONG).show();
+				else if (result.has("error"))
+					Toast.makeText(getBaseContext(), result.get("error").toString(), Toast.LENGTH_LONG).show();	
+				else
+					Toast.makeText(getApplicationContext(),result.toString() , Toast.LENGTH_LONG).show();
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 	}
 }

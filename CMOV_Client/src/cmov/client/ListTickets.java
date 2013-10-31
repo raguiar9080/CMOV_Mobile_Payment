@@ -13,6 +13,8 @@ import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.Menu;
+import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -30,8 +32,15 @@ public class ListTickets extends Activity {
 		SharedPreferences settings = getSharedPreferences(Common.PREFS_NAME, MODE_PRIVATE);
 		UserID = settings.getString("UserID", null);
 		new AsyncListTickets().execute();
+
+		final Button refreshlisttickets = (Button) findViewById(R.id.refreshlist_tickets);
+		refreshlisttickets.setOnClickListener(new View.OnClickListener() {
+			public void onClick(View v) {
+				new AsyncListTickets().execute();
+			}
+		});
 	}
-	
+
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
@@ -48,15 +57,21 @@ public class ListTickets extends Activity {
 		}
 		@Override
 		protected JSONObject doInBackground(Void... params) {
-			Network connection = new Network("http://10.13.37.34:81/listTickets", "POST", elems);
+			Network connection = new Network("http://192.168.1.2:81/listTickets", "POST", elems);
 			connection.run();
 			return connection.getResultObject();
 		}
 		protected void onPostExecute(JSONObject result) {
-			Integer t1=0,
-					t2=0,
-					t3=0;
-			try {
+			try {if (result == null)
+				Toast.makeText(getBaseContext(), "Error Fetching Data", Toast.LENGTH_LONG).show();
+			else if (result.has("error"))
+				Toast.makeText(getBaseContext(), result.get("error").toString(), Toast.LENGTH_LONG).show();
+			else
+			{
+				Integer t1=0,
+						t2=0,
+						t3=0;
+
 				JSONArray tickets = result.getJSONArray("status");
 				for (int i = 0; i < tickets.length(); i++)
 				{
@@ -67,12 +82,14 @@ public class ListTickets extends Activity {
 					else 
 						t3++;
 				}
+				((TextView) findViewById(R.id.t1Number)).setText(Integer.valueOf(t1).toString());
+				((TextView) findViewById(R.id.t2Number)).setText(Integer.valueOf(t2).toString());
+				((TextView) findViewById(R.id.t3Number)).setText(Integer.valueOf(t3).toString());
+
+			}
 			} catch (JSONException e) {
 				e.printStackTrace();
 			}
-			((TextView) findViewById(R.id.t1Number)).setText(new Integer(t1).toString());
-			((TextView) findViewById(R.id.t2Number)).setText(new Integer(t2).toString());
-			((TextView) findViewById(R.id.t3Number)).setText(new Integer(t3).toString());
 		}
 	}
 }

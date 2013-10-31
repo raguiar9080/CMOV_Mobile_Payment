@@ -158,7 +158,7 @@ sqliteDB.prototype.listTickets=function(clientID,callback)
 	if ( typeof callback !== 'function')
 		throw new Error('Callback is not a function');
 
-	ticketConn.all("SELECT transactions.tid, type, duration FROM transactions, tickets WHERE transactions.tid = tickets.tid AND transactions.cid = ? AND transactions.bid IS NULL",
+	ticketConn.all("SELECT transactions.id, transactions.tid, type, duration FROM transactions, tickets WHERE transactions.tid = tickets.tid AND transactions.cid = ? AND transactions.bid IS NULL",
 		[clientID],
 		function (err,row) { //eachfunction
 			console.log(err + " --- " + row);
