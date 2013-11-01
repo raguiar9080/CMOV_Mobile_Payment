@@ -8,35 +8,16 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context=".SplashScreen" >
-
+    
     <ImageView
         android:id="@+id/imageView1"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:src="@drawable/ic_launcher" />
 
-    <Button
-        android:id="@+id/listTickets"
+    <android.support.v4.view.ViewPager
+        android:id="@+id/ViewPager"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="List Tickets" />
-    
-    <Button
-        android:id="@+id/buyTickets"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Buy Tickets" />
-    
-    <Button
-        android:id="@+id/useTicket"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Use Ticket" />
-    
-    <Button
-        android:id="@+id/lastValidatedTicket"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="See Last Validated Ticket" />
-
+        />
 </LinearLayout>

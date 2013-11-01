@@ -8,47 +8,71 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.app.Activity;
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.view.Menu;
+import android.support.v4.app.Fragment;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import common.Common;
+import common.Common.DateUtils;
 import common.Network;
 
-public class ListTickets extends Activity {
+public class ListTickets extends Fragment {
 
-	private String UserID;
+	private String UserID="";
+
+	public ListTickets()
+	{
+
+	}
 	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		setContentView(R.layout.list_tickets);
-		//Get UserdID
-		SharedPreferences settings = getSharedPreferences(Common.PREFS_NAME, MODE_PRIVATE);
-		UserID = settings.getString("UserID", null);
-		new AsyncListTickets().execute();
-
-		final Button refreshlisttickets = (Button) findViewById(R.id.refreshlist_tickets);
+	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+		// Inflate the layout for this fragment
+		final View view = inflater.inflate(R.layout.list_tickets, container, false);
+		final Button refreshlisttickets = (Button) view.findViewById(R.id.refreshlist_tickets);
 		refreshlisttickets.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View v) {
 				new AsyncListTickets().execute();
 			}
 		});
+		return view;
 	}
 
 	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.main, menu);
-		return true;
+	public void onResume() {
+		//Get UserdID
+		SharedPreferences settings = this.getActivity().getSharedPreferences(Common.PREFS_NAME, Context.MODE_PRIVATE);
+
+		if(settings.getString("T1", null)!=null && settings.getString("T2", null)!=null && settings.getString("T3", null)!=null &&settings.getString("TimeUpdated", null)!=null)
+		{
+			((TextView) getView().findViewById(R.id.t1Number)).setText(settings.getString("T1", null));
+			((TextView) getView().findViewById(R.id.t2Number)).setText(settings.getString("T2", null));
+			((TextView) getView().findViewById(R.id.t3Number)).setText(settings.getString("T3", null));
+			((TextView) getView().findViewById(R.id.lastUpdated)).setText(settings.getString("TimeUpdated", null));
+		}
+		//If new ID refetch
+		if(UserID != settings.getString("UserID", null))
+		{
+			UserID = settings.getString("UserID", null);
+			new AsyncListTickets().execute();
+		}
+		super.onResume();
 	}
 
-	private class AsyncListTickets extends AsyncTask<Void, Void,  JSONObject> {
+	@Override
+	public void onPause() {
+		// TODO Auto-generated method stub
+		super.onPause();
+	}
+
+	public class AsyncListTickets extends AsyncTask<Void, Void,  JSONObject> {
 		private ArrayList<NameValuePair> elems = new ArrayList<NameValuePair>();
 		@Override
 		protected void onPreExecute() {
@@ -62,34 +86,68 @@ public class ListTickets extends Activity {
 			return connection.getResultObject();
 		}
 		protected void onPostExecute(JSONObject result) {
-			try {if (result == null)
-				Toast.makeText(getBaseContext(), "Error Fetching Data", Toast.LENGTH_LONG).show();
-			else if (result.has("error"))
-				Toast.makeText(getBaseContext(), result.get("error").toString(), Toast.LENGTH_LONG).show();
-			else
-			{
-				Integer t1=0,
-						t2=0,
-						t3=0;
-
-				JSONArray tickets = result.getJSONArray("status");
-				for (int i = 0; i < tickets.length(); i++)
+			try {
+				//fragment is not active on screen.
+				if(getActivity() == null || getView() == null)
 				{
-					if(((JSONObject)tickets.get(i)).get("type").equals("T1"))
-						t1++;
-					else if(((JSONObject)tickets.get(i)).get("type").equals("T2"))
-						t2++;
-					else 
-						t3++;
+					//we still want to save data even if not active
+					if(result!=null && !result.has("error"))
+					{
+						save_data(result);
+					}
+					return;
 				}
-				((TextView) findViewById(R.id.t1Number)).setText(Integer.valueOf(t1).toString());
-				((TextView) findViewById(R.id.t2Number)).setText(Integer.valueOf(t2).toString());
-				((TextView) findViewById(R.id.t3Number)).setText(Integer.valueOf(t3).toString());
-
-			}
+				else
+				{
+					if (result == null)
+						Toast.makeText(getActivity().getBaseContext(), "Error Fetching Data", Toast.LENGTH_LONG).show();
+					else if (result.has("error"))
+						Toast.makeText(getActivity().getBaseContext(), result.get("error").toString(), Toast.LENGTH_LONG).show();
+					else
+					{
+						ArrayList<String> values = save_data(result);
+						((TextView) getView().findViewById(R.id.t1Number)).setText(values.get(0));
+						((TextView) getView().findViewById(R.id.t2Number)).setText(values.get(1));
+						((TextView) getView().findViewById(R.id.t3Number)).setText(values.get(2));
+						((TextView) getView().findViewById(R.id.lastUpdated)).setText(values.get(3));
+					}
+				}
 			} catch (JSONException e) {
 				e.printStackTrace();
 			}
+		}
+		private ArrayList<String> save_data(JSONObject result) throws JSONException 
+		{
+			Integer t1=0,
+					t2=0,
+					t3=0;
+
+			JSONArray tickets = result.getJSONArray("status");
+			for (int i = 0; i < tickets.length(); i++)
+			{
+				if(((JSONObject)tickets.get(i)).get("type").equals("T1"))
+					t1++;
+				else if(((JSONObject)tickets.get(i)).get("type").equals("T2"))
+					t2++;
+				else 
+					t3++;
+			}
+			String now = DateUtils.now();
+			//Set UserID
+			SharedPreferences settings = getActivity().getSharedPreferences(Common.PREFS_NAME, Context.MODE_PRIVATE);
+			SharedPreferences.Editor editor = settings.edit();
+			editor.putString("T1", Integer.valueOf(t1).toString());
+			editor.putString("T2", Integer.valueOf(t2).toString());
+			editor.putString("T3", Integer.valueOf(t3).toString());
+			editor.putString("TimeUpdated", now);
+			// Commit the edits!
+			editor.commit();
+			ArrayList<String> tmp = new ArrayList<String>();
+			tmp.add(t1.toString());
+			tmp.add(t2.toString());
+			tmp.add(t3.toString());
+			tmp.add(now);
+			return tmp;
 		}
 	}
 }
