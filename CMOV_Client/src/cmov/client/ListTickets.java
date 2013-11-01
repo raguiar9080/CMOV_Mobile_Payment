@@ -1,5 +1,7 @@
 package cmov.client;
 
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 
 import org.apache.http.NameValuePair;
@@ -25,8 +27,6 @@ import common.Common.DateUtils;
 import common.Network;
 
 public class ListTickets extends Fragment {
-
-	private String UserID="";
 
 	public ListTickets()
 	{
@@ -57,12 +57,6 @@ public class ListTickets extends Fragment {
 			((TextView) getView().findViewById(R.id.t3Number)).setText(settings.getString("T3", null));
 			((TextView) getView().findViewById(R.id.lastUpdated)).setText(settings.getString("TimeUpdated", null));
 		}
-		//If new ID refetch
-		if(UserID != settings.getString("UserID", null))
-		{
-			UserID = settings.getString("UserID", null);
-			new AsyncListTickets().execute();
-		}
 		super.onResume();
 	}
 
@@ -76,7 +70,8 @@ public class ListTickets extends Fragment {
 		private ArrayList<NameValuePair> elems = new ArrayList<NameValuePair>();
 		@Override
 		protected void onPreExecute() {
-			elems.add(new BasicNameValuePair("cid",UserID));
+			SharedPreferences settings = getActivity().getSharedPreferences(Common.PREFS_NAME, Context.MODE_PRIVATE);
+			elems.add(new BasicNameValuePair("cid",settings.getString("UserID", null)));
 			super.onPreExecute();
 		}
 		@Override
@@ -112,19 +107,27 @@ public class ListTickets extends Fragment {
 						((TextView) getView().findViewById(R.id.lastUpdated)).setText(values.get(3));
 					}
 				}
-			} catch (JSONException e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		}
-		private ArrayList<String> save_data(JSONObject result) throws JSONException 
+		private ArrayList<String> save_data(JSONObject result) throws JSONException, IOException 
 		{
 			Integer t1=0,
 					t2=0,
 					t3=0;
 
 			JSONArray tickets = result.getJSONArray("status");
+			String now = DateUtils.now();			
+			
+			FileOutputStream fos = getActivity().openFileOutput(Common.FILENAME, Context.MODE_PRIVATE);
+			fos.write(now.getBytes());
 			for (int i = 0; i < tickets.length(); i++)
 			{
+				fos.write(((JSONObject)tickets.get(i)).get("type").toString().getBytes());
+				fos.write(new String(";").getBytes());
+				fos.write(((JSONObject)tickets.get(i)).get("id").toString().getBytes());
+				fos.write(new String("\n").getBytes());
 				if(((JSONObject)tickets.get(i)).get("type").equals("T1"))
 					t1++;
 				else if(((JSONObject)tickets.get(i)).get("type").equals("T2"))
@@ -132,8 +135,9 @@ public class ListTickets extends Fragment {
 				else 
 					t3++;
 			}
-			String now = DateUtils.now();
-			//Set UserID
+			fos.close();
+			
+			//Set UserID & Number of tickets for speed
 			SharedPreferences settings = getActivity().getSharedPreferences(Common.PREFS_NAME, Context.MODE_PRIVATE);
 			SharedPreferences.Editor editor = settings.edit();
 			editor.putString("T1", Integer.valueOf(t1).toString());
@@ -142,6 +146,11 @@ public class ListTickets extends Fragment {
 			editor.putString("TimeUpdated", now);
 			// Commit the edits!
 			editor.commit();
+			
+			
+			
+			
+			//return to be presented on screen if active
 			ArrayList<String> tmp = new ArrayList<String>();
 			tmp.add(t1.toString());
 			tmp.add(t2.toString());

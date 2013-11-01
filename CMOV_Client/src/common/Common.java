@@ -7,7 +7,8 @@ import java.util.Calendar;
 @SuppressLint("SimpleDateFormat")
 public class Common {
 	public static final String PREFS_NAME = "CMOVClient";
-	public static final String SERVER_URL = "http://10.13.37.100:81/";
+	public static String FILENAME = "hello_file";
+	public static final String SERVER_URL = "http://10.13.37.34:81/";
 
 	public static class DateUtils {
 		public static final String DATE_FORMAT_NOW = "yyyy-MM-dd HH:mm:ss";

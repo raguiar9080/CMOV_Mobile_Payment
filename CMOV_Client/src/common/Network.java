@@ -31,7 +31,7 @@ public class Network implements Runnable {
 		String line = "";
 		StringBuffer sb = new StringBuffer();
 		try {
-
+			
 			URL url = new URL(link);
 			con = (HttpURLConnection) url.openConnection();
 			con.setReadTimeout(readTimeout);

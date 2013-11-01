@@ -12,7 +12,7 @@ import android.view.Menu;
 
 import common.Common;
 
-public class SplashScreen extends FragmentActivity {
+public class MainActivity extends FragmentActivity {
 	private String UserID;
 	
 	@Override
@@ -32,7 +32,7 @@ public class SplashScreen extends FragmentActivity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.splash_screen);
+		setContentView(R.layout.main_activity);
 
 		/** Getting a reference to the ViewPager defined the layout file */
         ViewPager pager = (ViewPager) findViewById(R.id.ViewPager);

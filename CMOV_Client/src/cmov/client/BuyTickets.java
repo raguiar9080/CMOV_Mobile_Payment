@@ -25,7 +25,6 @@ import common.Network;
 
 public class BuyTickets extends Fragment {
 
-	private String UserID;
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		// Inflate the layout for this fragment
@@ -81,9 +80,6 @@ public class BuyTickets extends Fragment {
 
 	@Override
 	public void onResume() {
-		//Get UserdID
-		SharedPreferences settings = this.getActivity().getSharedPreferences(Common.PREFS_NAME, Context.MODE_PRIVATE);
-		UserID = settings.getString("UserID", null);
 		super.onResume();
 	}
 
@@ -97,7 +93,9 @@ public class BuyTickets extends Fragment {
 		private ArrayList<NameValuePair> elems = new ArrayList<NameValuePair>();
 		@Override
 		protected void onPreExecute() {
-			elems.add(new BasicNameValuePair("cid",UserID));
+			SharedPreferences settings = getActivity().getSharedPreferences(Common.PREFS_NAME, Context.MODE_PRIVATE);
+			
+			elems.add(new BasicNameValuePair("cid",settings.getString("UserID", null)));
 			elems.add(new BasicNameValuePair("t1",(String) ((TextView) getView().findViewById(R.id.t1label)).getText()));
 			elems.add(new BasicNameValuePair("t2",(String) ((TextView) getView().findViewById(R.id.t2label)).getText()));
 			elems.add(new BasicNameValuePair("t3",(String) ((TextView) getView().findViewById(R.id.t3label)).getText()));
