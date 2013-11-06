@@ -68,20 +68,23 @@
                 android:textAppearance="?android:attr/textAppearanceMedium" />
 
             <Button
-                android:id="@+id/testButton"
+                android:id="@+id/serviceBtn"                             
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_below="@+id/insEn"
                 android:layout_centerHorizontal="true"
-                android:text="@string/test" />
+                android:layout_below="@id/insEn"
+                android:text="@string/onOff" />
 
             <ImageView
                 android:id="@+id/qrImageView"
+                android:layout_below="@id/serviceBtn"
+                android:layout_centerHorizontal="true"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"               
+                android:layout_marginRight="21dp"
+                android:layout_marginTop="84dp"
+                android:layout_toLeftOf="@+id/numberText"
                 android:contentDescription="@string/img_des"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_below="@+id/testButton"
                 android:src="@drawable/ic_launcher" />
-
 </RelativeLayout>
 

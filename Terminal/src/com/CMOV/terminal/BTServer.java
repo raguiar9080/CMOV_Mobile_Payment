@@ -50,6 +50,7 @@ public class BTServer extends IntentService{
 							BTServer.addSocket(client);
 							Intent notify = new Intent(ACTION_BLUETOOTH);
 							notify.putExtra("address", client.getRemoteDevice().getAddress());
+							Log.d("BTServer","Client Connected");
 							sendBroadcast(notify);
 						}
 					} catch (IOException e) {						

@@ -10,5 +10,6 @@
     <string name="test">Test</string>
     <string name="img_des">QR Code</string>
     <string name="placeholder_number">9235</string>
+    <string name="onOff">Service On/Off</string>
 
 </resources>

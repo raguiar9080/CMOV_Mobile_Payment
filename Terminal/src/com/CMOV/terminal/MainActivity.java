@@ -19,6 +19,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -110,6 +111,15 @@ public class MainActivity extends Activity {
 			else startServer();
 		}				
 	}
+	
+	View.OnClickListener btnListener = new View.OnClickListener() {		
+		@Override
+		public void onClick(View v) 
+		{
+			if(!serverOn)startServer();
+			else close();
+		}
+	};
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -119,7 +129,9 @@ public class MainActivity extends Activity {
 		TextView text = (TextView) findViewById(R.id.numberText);
 		text.setText(String.valueOf(bid));
 		
-		checkServiceState();		
+		checkServiceState();
+		
+		findViewById(R.id.serviceBtn).setOnClickListener(btnListener);
 	}
 	
 	@Override
@@ -149,7 +161,9 @@ public class MainActivity extends Activity {
 			registerReceiver(broadcastReceiver, new IntentFilter(BTServer.ACTION_BLUETOOTH));
 			Intent intent=new Intent(this,BTServer.class);
 			startService(intent);
+			Log.d("Main","Before creating QR");
 			generateQR();
+			Log.d("Main","After creating QR");
 		}
 		else eliminateQR();		
 	}
@@ -160,6 +174,8 @@ public class MainActivity extends Activity {
 			unregisterReceiver(broadcastReceiver);
 			Intent intent=new Intent(this, BTServer.class);
 	    	stopService(intent);
+	    	serverOn=false;
+	    	Log.d("Main","Closing");
 		}	
 		eliminateQR();
 	}	
@@ -184,6 +200,7 @@ public class MainActivity extends Activity {
 		}
 		else if (res==0)
 		{
+			Log.d("Main","Starting Server");
 			startServer();
 		}
 		return true;

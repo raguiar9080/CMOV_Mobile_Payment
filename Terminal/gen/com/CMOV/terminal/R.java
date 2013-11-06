@@ -32,7 +32,7 @@ public final class R {
         public static final int masterLayout=0x7f080000;
         public static final int numberText=0x7f080003;
         public static final int qrImageView=0x7f080007;
-        public static final int testButton=0x7f080006;
+        public static final int serviceBtn=0x7f080006;
         public static final int welcomeEn=0x7f080002;
         public static final int welcomePt=0x7f080001;
     }
@@ -48,6 +48,7 @@ public final class R {
         public static final int img_des=0x7f050007;
         public static final int instruction_en=0x7f050005;
         public static final int instruction_pt=0x7f050004;
+        public static final int onOff=0x7f050009;
         public static final int placeholder_number=0x7f050008;
         public static final int test=0x7f050006;
         public static final int welcome_en=0x7f050003;
