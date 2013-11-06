@@ -62,12 +62,12 @@ public class UseTickets extends ListTickets {
 					fileContent.append(new String(buffer));
 				}
 				fis.close();
-				JSONArray tickets = new JSONObject(fileContent.toString()).getJSONArray("status");
-				for (int i = 0; i < tickets.length(); i++)
+				String tickets[] = fileContent.toString().split("\\r?\\n");
+				for (String ticket : tickets)
 				{
-					if(((JSONObject)tickets.get(i)).get("type").equals(type))
+					if(ticket.substring(0, 2).equals(type))
 					{
-						elems.add(new BasicNameValuePair("tid",((JSONObject)tickets.get(i)).get("id").toString()));
+						elems.add(new BasicNameValuePair("tid",ticket.substring(4)));
 						return;
 					}
 				}
@@ -149,14 +149,7 @@ public class UseTickets extends ListTickets {
 						break;
 					}
 				}
-				
-				FileOutputStream fos = getActivity().openFileOutput(Common.FILENAME, Context.MODE_PRIVATE);
-				fos.write(new String("CACHED").getBytes());
-				for (int i = 0; i < lines.length; i++)
-				{
-					fos.write(lines[i].getBytes());
-				}
-				fos.close();
+				//if it gets here you don't have valid tickets
 				
 			} catch (Exception e) {
 				// TODO Auto-generated catch block

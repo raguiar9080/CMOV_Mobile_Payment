@@ -122,6 +122,7 @@ public class ListTickets extends Fragment {
 			
 			FileOutputStream fos = getActivity().openFileOutput(Common.FILENAME, Context.MODE_PRIVATE);
 			fos.write(now.getBytes());
+			fos.write(new String("\n").getBytes());
 			for (int i = 0; i < tickets.length(); i++)
 			{
 				fos.write(((JSONObject)tickets.get(i)).get("type").toString().getBytes());
