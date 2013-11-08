@@ -209,7 +209,7 @@ public class UseTickets extends ListTickets {
 				{
 					if(ticket.substring(0, 2).equals(type))
 					{
-						tid = ticket.substring(4);
+						tid = ticket.substring(3);
 						break;
 					}
 				}
