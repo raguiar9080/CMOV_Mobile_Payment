@@ -30,10 +30,10 @@ public class BuyTickets extends Fragment {
 		// Inflate the layout for this fragment
 		final View view = inflater.inflate(R.layout.buy_tickets, container, false);
 
-		final Button buytickets = (Button) view.findViewById(R.id.buybtn);
+		final Button buytickets = (Button) view.findViewById(R.id.preparebuybtn);
 		buytickets.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View v) {
-				new AsyncBuyTickets().execute();
+				new AsyncPrepareBuyTickets().execute();
 			}
 		});
 
@@ -89,13 +89,49 @@ public class BuyTickets extends Fragment {
 		super.onPause();
 	}
 
+	private class AsyncPrepareBuyTickets extends AsyncTask<Void, Void,  JSONObject> {
+		private ArrayList<NameValuePair> elems = new ArrayList<NameValuePair>();
+		@Override
+		protected void onPreExecute() {
+			SharedPreferences settings = getActivity().getSharedPreferences(Common.PREFS_NAME, Context.MODE_PRIVATE);
+			
+			elems.add(new BasicNameValuePair("t1",(String) ((TextView) getView().findViewById(R.id.t1label)).getText()));
+			elems.add(new BasicNameValuePair("t2",(String) ((TextView) getView().findViewById(R.id.t2label)).getText()));
+			elems.add(new BasicNameValuePair("t3",(String) ((TextView) getView().findViewById(R.id.t3label)).getText()));
+
+			super.onPreExecute();
+		}
+		@Override
+		protected JSONObject doInBackground(Void... params) {
+			Network connection = new Network(Common.SERVER_URL + "prepareBuyTickets", "POST", elems);
+			connection.run();
+			return connection.getResultObject();
+		}
+		protected void onPostExecute(JSONObject result) {
+			//fragment is not active on screen.
+			if(getActivity() == null || getView() == null)
+				return;
+			try {
+				if (result == null)
+					Toast.makeText(getActivity().getBaseContext(), "Error Sending Data", Toast.LENGTH_LONG).show();
+				else if (result.has("error"))
+					Toast.makeText(getActivity().getBaseContext(), result.get("error").toString(), Toast.LENGTH_LONG).show();	
+				else
+					//TODO
+					Toast.makeText(getActivity().getApplicationContext(),result.toString() , Toast.LENGTH_LONG).show();
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
 	private class AsyncBuyTickets extends AsyncTask<Void, Void,  JSONObject> {
 		private ArrayList<NameValuePair> elems = new ArrayList<NameValuePair>();
 		@Override
 		protected void onPreExecute() {
 			SharedPreferences settings = getActivity().getSharedPreferences(Common.PREFS_NAME, Context.MODE_PRIVATE);
 			
-			elems.add(new BasicNameValuePair("cid",settings.getString("UserID", null)));
+			elems.add(new BasicNameValuePair("t1",settings.getString("UserID", null)));
 			elems.add(new BasicNameValuePair("t1",(String) ((TextView) getView().findViewById(R.id.t1label)).getText()));
 			elems.add(new BasicNameValuePair("t2",(String) ((TextView) getView().findViewById(R.id.t2label)).getText()));
 			elems.add(new BasicNameValuePair("t3",(String) ((TextView) getView().findViewById(R.id.t3label)).getText()));
@@ -120,7 +156,6 @@ public class BuyTickets extends Fragment {
 				else
 					Toast.makeText(getActivity().getApplicationContext(),result.toString() , Toast.LENGTH_LONG).show();
 			} catch (JSONException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}

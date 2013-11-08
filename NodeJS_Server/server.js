@@ -182,8 +182,8 @@ app.post('/validate',function(req,res){
 				}
 				else
 				{
-
-					out.status=true;
+					out.status = true;
+					out.key = row;
 					console.log('validate ticket: ',tid,' ',cid,' ',bid);
 				}
 			}
@@ -234,9 +234,48 @@ app.post('/listTickets', function (req, res) {
 	}
 });
 
+
+// PREPARE BUY TICKETS
+// POST /buy PARAMS: cid:client id, t1:nr de t1s, t2:nr de t2s,t3:nr de t3s
+// returns {t1:21,t2:32,t3:43,price:100}
+app.post('/prepareBuyTickets', function (req, res) {
+	console.log("Preparing Buyng tickets:_t1_" + req.body.t1 + "_t2:_" + req.body.t2 + "_t3:_" + req.body.t3 + "_");
+	if( !req.body.t1||!req.body.t2||!req.body.t3)
+		respondToJSON( req, res, {error: 'Bad request'}, 400 );
+	else {
+		var t1=Number(req.body.t1),
+			t2=Number(req.body.t2),
+			t3=Number(req.body.t3);
+		console.log("DATABASE");
+		db.prepareBuyTickets(t1,t2,t3, function(err,out) {
+			var code;
+
+			if( err ) {
+				code = 500;
+				out.error = 'Impossible to buys tickets for client';
+				console.log('Error listing tickets: ' + err);
+			}
+			else {
+				code = 200;
+				if (!out)
+				{
+					out.error = 'Wrong PARAMS';
+					console.log('Fail buy tickets: ',cid);
+				}
+				else
+				{
+					console.log('prepared buy: ' + JSON.stringify( out ));
+				}
+			}
+			respondToJSON( req, res, out, code );
+		});
+		
+	}
+});
+
 // BUY TICKETS
 // POST /buy PARAMS: cid:client id, t1:nr de t1s, t2:nr de t2s,t3:nr de t3s
-// returns {t1:21,t2:32,t3:43}
+// returns {null}
 app.post('/buyTickets', function (req, res) {
 	console.log('Buyng tickets for:' + req.body.cid + "t1:" + req.body.t1 + "t2:" + req.body.t2 + "t3:" + req.body.t3);
 	var cid = Number(req.body.cid),
@@ -265,7 +304,8 @@ app.post('/buyTickets', function (req, res) {
 				}
 				else
 				{
-					console.log('client tickets after buy: ',cid, ' ',JSON.stringify( out ));
+					out.status = "OK";
+					console.log('TICKETS BOUGHT');
 				}
 			}
 

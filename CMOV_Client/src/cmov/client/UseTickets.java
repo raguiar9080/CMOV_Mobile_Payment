@@ -1,9 +1,10 @@
 package cmov.client;
 
-import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.http.NameValuePair;
+import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -16,6 +17,7 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -37,7 +39,6 @@ public class UseTickets extends ListTickets {
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		final View view = inflater.inflate(R.layout.use_tickets, container, false);
 
-		//Get UserdID
 		SharedPreferences settings = this.getActivity().getSharedPreferences(Common.PREFS_NAME, Context.MODE_PRIVATE);
 		if(settings.getString("T1", null)!=null && settings.getString("T2", null)!=null && settings.getString("T3", null)!=null &&settings.getString("TimeUpdated", null)!=null)
 		{
@@ -46,63 +47,67 @@ public class UseTickets extends ListTickets {
 			((TextView) view.findViewById(R.id.t3Number)).setText(settings.getString("T3", null));
 			((TextView) view.findViewById(R.id.lastUpdated)).setText(settings.getString("TimeUpdated", null));
 		}
-		
+
 		final Button refreshlisttickets = (Button) view.findViewById(R.id.refreshlist_tickets);
 		refreshlisttickets.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View v) {
 				new AsyncListTickets().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 			}
 		});
-		
+
 		final Button refreshbuses = (Button) view.findViewById(R.id.refreshbuses);
 		refreshbuses.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View v) {
 				new AsyncListBuses().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 			}
 		});
-		
+
 
 		//Override to Buy When Selected
 		final TextView t1Number = (TextView) view.findViewById(R.id.t1Number);
 		t1Number.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View v) {
-				new AsyncUseTickets("T1").execute();
+				new AsyncUseTickets("1").execute();
 			}
 		});
 		final TextView t2Number = (TextView) view.findViewById(R.id.t2Number);
 		t2Number.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View v) {
-				new AsyncUseTickets("T2").execute();
+				new AsyncUseTickets("2").execute();
 			}
 		});
 		final TextView t3Number = (TextView) view.findViewById(R.id.t3Number);
 		t3Number.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View v) {
-				new AsyncUseTickets("T3").execute();
+				new AsyncUseTickets("3").execute();
 			}
 		});
 		PopulateBuses(view);
-		
+
 		return view;
 	}
 
 	private void PopulateBuses(View view)
 	{
-		//populate buses
 		final RadioGroup group = (RadioGroup) view.findViewById(R.id.buses_list);
 		group.removeAllViews();
 		for(BluetoothDevice device : btDeviceList)
 		{
-			//TODO
-			//if(device.getName() != null && device.getName().equals("Xperia neo"))
-			//{
-				RadioButton tmprb = new RadioButton(getActivity().getBaseContext());
-				tmprb.setText(device.getName());
-				tmprb.setId(group.getChildCount());
-				group.addView(tmprb);
-			//}
+			RadioButton tmprb = new RadioButton(getActivity().getBaseContext());
+			tmprb.setText(device.getName());
+			tmprb.setId(group.getChildCount());
+			group.addView(tmprb);
 		}
+	}
 
+	private void AddBus(BluetoothDevice device)
+	{
+		final RadioGroup group = (RadioGroup) getView().findViewById(R.id.buses_list);
+
+		RadioButton tmprb = new RadioButton(getActivity().getBaseContext());
+		tmprb.setText(device.getName());
+		tmprb.setId(group.getChildCount());
+		group.addView(tmprb);
 	}
 
 	private class AsyncListBuses extends AsyncTask<Void, Void, Void> {
@@ -117,17 +122,19 @@ public class UseTickets extends ListTickets {
 		protected Void doInBackground(Void... params) {
 			try{getActivity().unregisterReceiver(ActionFoundReceiver);}catch (Exception e){}
 
+			if (!BTFunctions.isBluetoothAvailable())
+			{
+				Log.d("ERROR", "DEVICE DOES NOT SUPPORT BLUETOOTH. CANNOT CONTINUE.");
+				return null;
+			}
+			
 			//Register the BroadcastReceiver
 			IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
 			filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED);
 			filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
 			getActivity().registerReceiver(ActionFoundReceiver, filter); // Don't forget to unregister during onDestroy
 
-			if (!BTFunctions.isBluetoothAvailable())
-			{
-				Toast.makeText(getActivity().getBaseContext(), "DEVICE DOES NOT SUPPORT BLUETOOTH. CANNOT CONTINUE.", Toast.LENGTH_LONG).show();
-				return null;
-			}
+
 			BTFunctions.btEnable(getActivity(), 0);
 			BTFunctions.startdiscover();
 			int retries = 0;
@@ -140,14 +147,14 @@ public class UseTickets extends ListTickets {
 			}
 
 			if(!(retries < MAXIMUM_TIMEOUT_TRIES))
-				Toast.makeText(getActivity().getBaseContext(), "TIMEOUT REACHED", Toast.LENGTH_LONG).show();
+				Log.d("ERROR", "TIMEOUT REACHED");
+			
 			return null;
 		}
 
 		@Override
 		protected void onPostExecute(Void result) {
 			getActivity().unregisterReceiver(ActionFoundReceiver);
-			PopulateBuses(getView());
 		}
 
 		private final BroadcastReceiver ActionFoundReceiver = new BroadcastReceiver(){
@@ -159,6 +166,7 @@ public class UseTickets extends ListTickets {
 				{
 					BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
 					btDeviceList.add(device);
+					AddBus(device);
 				}
 				else
 				{
@@ -186,99 +194,102 @@ public class UseTickets extends ListTickets {
 		private String cid;
 		private String tid;
 		private int selected = -1;
-		private String type;
+
+		public AsyncUseTickets(String type)
+		{
+			this.tid = type;
+			SharedPreferences settings = getActivity().getSharedPreferences(Common.PREFS_NAME, Context.MODE_PRIVATE);
+			this.cid = settings.getString("UserID", null);
+		}
 		
 		@Override
 		protected void onPreExecute() {
-			SharedPreferences settings = getActivity().getSharedPreferences(Common.PREFS_NAME, Context.MODE_PRIVATE);
-			
-
-			cid = settings.getString("UserID", null);
-			
-			try {
-				FileInputStream fis;
-				fis = getActivity().openFileInput(Common.FILENAME);
-				StringBuffer fileContent = new StringBuffer("");
-				byte[] buffer = new byte[1024];
-				while (fis.read(buffer) != -1) {
-					fileContent.append(new String(buffer));
-				}
-				fis.close();
-				String tickets[] = fileContent.toString().split("\\r?\\n");
-				for (String ticket : tickets)
-				{
-					if(ticket.substring(0, 2).equals(type))
-					{
-						tid = ticket.substring(3);
-						break;
-					}
-				}
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-
-			
 			final RadioGroup group = (RadioGroup) getView().findViewById(R.id.buses_list);
 			//because theyre ID's are sequential and from zero
 			selected = group.getCheckedRadioButtonId();
-			
+
 			super.onPreExecute();
 		}
 		@Override
 		protected JSONObject doInBackground(Void... params) {
+			
+			//TESTING PURPOSES
+			ArrayList<NameValuePair> elems = new ArrayList<NameValuePair>();
+			elems.add(new BasicNameValuePair("cid",cid));
+			elems.add(new BasicNameValuePair("tid",tid));
+			elems.add(new BasicNameValuePair("bid","1"));
+			Network connection = new Network(Common.SERVER_URL + "validate", "POST", elems);
+			connection.run();
+			connection.getResultObject();
+			
+			if(selected == -1)
+				return null;
+			
 			JSONObject tmpobject = new JSONObject();
 			try {
 				tmpobject.accumulate("cid", cid);
 				tmpobject.accumulate("tid", tid);
 			} catch (JSONException e){}
-			
+
 			BTFunctions.createsocket(btDeviceList.get(selected).getAddress());
 			BTFunctions.write(tmpobject.toString());
-			Object read = BTFunctions.read();
+			JSONObject read = (JSONObject) BTFunctions.read();
 			BTFunctions.disconnect();
-			Network connection = new Network(Common.SERVER_URL + "validate", "POST", null);
-			connection.run();
-			return connection.getResultObject();
+			return read;
 		}
+
 		protected void onPostExecute(JSONObject result) {
-			validateTicketLocally(tid);
-		}
-		
-		public AsyncUseTickets(String type)
-		{
-			this.type = type;
-		}
-		
-		public void validateTicketLocally(String tid)
-		{
 			try {
-				FileInputStream fis;
-				fis = getActivity().openFileInput(Common.FILENAME);
-				StringBuffer fileContent = new StringBuffer("");
-				byte[] buffer = new byte[1024];
-				while (fis.read(buffer) != -1) {
-					fileContent.append(new String(buffer));
-				}
-				fis.close();
-				String lines[] = fileContent.toString().split("\\r?\\n");
-				for (int i = 0; i < lines.length; i++)
+				//fragment is not active on screen.
+				if(getActivity() == null || getView() == null)
 				{
-					// NOTE that a line has Tx,id. id always start at same position
-					if(lines[i].substring(3).equals(tid))
+					//we still want to save data even if not active
+					if(result!=null && !result.has("error"))
 					{
-						lines[i] = null;
-						//TODO remove on preferences
-						break;
+						validateTicketLocally((String) result.get("key"));
+					}
+					return;
+				}
+				else
+				{
+					if (result == null)
+						Toast.makeText(getActivity().getBaseContext(), "Error Fetching Data", Toast.LENGTH_LONG).show();
+					else if (result.has("error"))
+						Toast.makeText(getActivity().getBaseContext(), result.get("error").toString(), Toast.LENGTH_LONG).show();
+					else
+					{
+						validateTicketLocally((String) result.get("key"));
 					}
 				}
-				//if it gets here you don't have valid tickets but server said so :S
-
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
+
+		public void validateTicketLocally(String key)
+		{
+			SharedPreferences settings = getActivity().getSharedPreferences(Common.PREFS_NAME, Context.MODE_PRIVATE);
+			SharedPreferences.Editor editor = settings.edit();
+			
+			if (tid.equals("1"))
+				editor.putString("T1", ((Integer) (Integer.valueOf(settings.getString("T1", null)) - 1)).toString());
+			else if (tid.equals("2"))
+				editor.putString("T2", ((Integer) (Integer.valueOf(settings.getString("T2", null)) - 1)).toString());
+			else
+				editor.putString("T3", ((Integer) (Integer.valueOf(settings.getString("T3", null)) - 1)).toString());
+			
+			editor.putString("LastTicket", key);
+			editor.putString("TimeUpdated", "LOCAL");
+			
+			if(settings.getString("T1", null)!=null && settings.getString("T2", null)!=null && settings.getString("T3", null)!=null &&settings.getString("TimeUpdated", null)!=null)
+			{
+				((TextView) getView().findViewById(R.id.t1Number)).setText(settings.getString("T1", null));
+				((TextView) getView().findViewById(R.id.t2Number)).setText(settings.getString("T2", null));
+				((TextView) getView().findViewById(R.id.t3Number)).setText(settings.getString("T3", null));
+				((TextView) getView().findViewById(R.id.lastUpdated)).setText(settings.getString("TimeUpdated", null));
+			}
+			// Commit the edits!
+			editor.commit();
+		}
 	}
 }
-

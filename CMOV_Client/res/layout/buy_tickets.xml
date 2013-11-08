@@ -69,11 +69,11 @@
             android:textAppearance="?android:attr/textAppearanceMedium" />
 
         <Button
-            android:id="@+id/buybtn"
+            android:id="@+id/preparebuybtn"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:text="Buy" />
+            android:text="Check" />
 
     </LinearLayout>
 

@@ -128,7 +128,7 @@ sqliteDB.prototype.login=function(name, pass, callback)
 
 sqliteDB.prototype.validate=function(cid, tid, bid, callback)
 {
-	console.log("Validating ticket:_" + tid + "_; client:_" + cid + "_");
+	console.log("Validating ticket:_" + tid + "_; client:_" + cid + "_;bus:_" + bid + "_");
 	console.log(typeof(tid) + typeof(cid));
 	if ( typeof callback !== 'function')
 		throw new Error('Callback is not a function');
@@ -139,12 +139,13 @@ sqliteDB.prototype.validate=function(cid, tid, bid, callback)
 			{
 				var date=timestamp();
 				var transaction_id=row.id;
+				console.log("id encontrado:_" + transaction_id + "_");
 				ticketConn.run("UPDATE transactions SET dateValidated=?, bid=? WHERE id=?",[date,bid,transaction_id],
 					function(err)
 					{
-						if (!err)console.log("Sucess on Validation",this.changes);
+						if (!err)console.log("Sucess on Validation",transaction_id);
 						else console.log("DB error on Validation");
-						callback(err,this.changes);
+						callback(err, transaction_id);
 					});
 			}
 			else
@@ -171,27 +172,50 @@ sqliteDB.prototype.listTickets=function(clientID,callback)
 		});	
 }
 
+
+sqliteDB.prototype.prepareBuyTickets=function(t1,t2,t3,callback)
+{
+	console.log("preparing buy tickets");
+	if ( typeof callback !== 'function')
+		throw new Error('Callback is not a function');	
+	var count = t1 + t2 + t3;
+	var out = {};
+	out.price = t1 + 2*t2 + 3*t3;
+
+	//adding bonus
+	if (count >= 10)
+	{
+		if(t1 > 0 )
+			t1++;
+		else if (t2 > 0)
+			t2++;
+		else
+			t3++;
+	}
+	
+	out.t1 = t1;
+	out.t2 = t2;
+	out.t3 = t3;
+	callback(null,out);
+}
+
 sqliteDB.prototype.buyTickets=function(clientID,t1,t2,t3,callback)
 {
 	console.log("buy tickets for ",clientID);
 	if ( typeof callback !== 'function')
 		throw new Error('Callback is not a function');	
-	var count,resto;
-	resto=t3%10;
-	count=t3-resto;
-	t3+=count/10;
-	count=resto+t2;
-	resto=count%10;
-	count=count-resto;
-	t2+=count/10;
-	count=resto+t1;
-	resto=count%10;
-	count=count-resto;
-	t1+=count/10;
+	var count = t1 + t2 + t3;
+	if (count >= 10)
+	{
+		if(t1 > 0 )
+			t1++;
+		else if (t2 > 0)
+			t2++;
+		else
+			t3++;
+	}
 	var ts=timestamp();
 	
-	var out={};out.t1=t1;out.t2=t2;out.t3=t3;
-	console.log("tickets + bonus: ",t1," ",t2," ",t3);
 	ticketConn.parallelize(function(){
 		for (var i=0;i<t3;i++)
 		{
@@ -208,7 +232,7 @@ sqliteDB.prototype.buyTickets=function(clientID,t1,t2,t3,callback)
 
 		}
 	});
-	callback(null,out);
+	callback(null,null);
 }
 
 sqliteDB.prototype.getValidatedTickets=function(busId,callback)

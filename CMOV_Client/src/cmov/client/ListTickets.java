@@ -1,6 +1,5 @@
 package cmov.client;
 
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -27,17 +26,12 @@ import common.Common.DateUtils;
 import common.Network;
 
 public class ListTickets extends Fragment {
-
-	public ListTickets()
-	{
-
-	}
+	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		// Inflate the layout for this fragment
 		final View view = inflater.inflate(R.layout.list_tickets, container, false);
 		
-		//Get UserdID
 		SharedPreferences settings = this.getActivity().getSharedPreferences(Common.PREFS_NAME, Context.MODE_PRIVATE);
 		if(settings.getString("T1", null)!=null && settings.getString("T2", null)!=null && settings.getString("T3", null)!=null &&settings.getString("TimeUpdated", null)!=null)
 		{
@@ -109,17 +103,8 @@ public class ListTickets extends Fragment {
 					t3=0;
 
 			JSONArray tickets = result.getJSONArray("status");
-			String now = DateUtils.now();			
-
-			FileOutputStream fos = getActivity().openFileOutput(Common.FILENAME, Context.MODE_PRIVATE);
-			fos.write(now.getBytes());
-			fos.write(new String("\n").getBytes());
 			for (int i = 0; i < tickets.length(); i++)
 			{
-				fos.write(((JSONObject)tickets.get(i)).get("type").toString().getBytes());
-				fos.write(new String(";").getBytes());
-				fos.write(((JSONObject)tickets.get(i)).get("id").toString().getBytes());
-				fos.write(new String("\n").getBytes());
 				if(((JSONObject)tickets.get(i)).get("type").equals("T1"))
 					t1++;
 				else if(((JSONObject)tickets.get(i)).get("type").equals("T2"))
@@ -127,8 +112,9 @@ public class ListTickets extends Fragment {
 				else 
 					t3++;
 			}
-			fos.close();
-
+			
+			String now = DateUtils.now();
+			
 			//Set UserID & Number of tickets for speed
 			SharedPreferences settings = getActivity().getSharedPreferences(Common.PREFS_NAME, Context.MODE_PRIVATE);
 			SharedPreferences.Editor editor = settings.edit();
