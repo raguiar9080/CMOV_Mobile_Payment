@@ -4,8 +4,7 @@ import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.http.NameValuePair;
-import org.apache.http.message.BasicNameValuePair;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.bluetooth.BluetoothAdapter;
@@ -32,7 +31,7 @@ import common.Network;
 
 public class UseTickets extends ListTickets {
 
-	List<BluetoothDevice> btDeviceList = new ArrayList<BluetoothDevice>();
+	public static List<BluetoothDevice> btDeviceList = new ArrayList<BluetoothDevice>();
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -52,9 +51,16 @@ public class UseTickets extends ListTickets {
 		refreshlisttickets.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View v) {
 				new AsyncListTickets().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+			}
+		});
+		
+		final Button refreshbuses = (Button) view.findViewById(R.id.refreshbuses);
+		refreshbuses.setOnClickListener(new View.OnClickListener() {
+			public void onClick(View v) {
 				new AsyncListBuses().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 			}
 		});
+		
 
 		//Override to Buy When Selected
 		final TextView t1Number = (TextView) view.findViewById(R.id.t1Number);
@@ -79,12 +85,6 @@ public class UseTickets extends ListTickets {
 		
 		return view;
 	}
-	
-	@Override
-    public void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        //outState.put("buses_list", btDeviceList);
-    }
 
 	private void PopulateBuses(View view)
 	{
@@ -183,10 +183,18 @@ public class UseTickets extends ListTickets {
 
 
 	private class AsyncUseTickets extends AsyncTask<Void, Void,  JSONObject> {
-		private ArrayList<NameValuePair> elems = new ArrayList<NameValuePair>();
+		private String cid;
+		private String tid;
+		private int selected = -1;
+		private String type;
+		
+		@Override
+		protected void onPreExecute() {
+			SharedPreferences settings = getActivity().getSharedPreferences(Common.PREFS_NAME, Context.MODE_PRIVATE);
+			
 
-		public AsyncUseTickets(String type)
-		{
+			cid = settings.getString("UserID", null);
+			
 			try {
 				FileInputStream fis;
 				fis = getActivity().openFileInput(Common.FILENAME);
@@ -201,34 +209,47 @@ public class UseTickets extends ListTickets {
 				{
 					if(ticket.substring(0, 2).equals(type))
 					{
-						elems.add(new BasicNameValuePair("tid",ticket.substring(4)));
-						return;
+						tid = ticket.substring(4);
+						break;
 					}
 				}
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-		}
-		@Override
-		protected void onPreExecute() {
-			SharedPreferences settings = getActivity().getSharedPreferences(Common.PREFS_NAME, Context.MODE_PRIVATE);
 
-			elems.add(new BasicNameValuePair("cid",settings.getString("UserID", null)));
-			elems.add(new BasicNameValuePair("bid","1"));
-			//tid already added
-
+			
+			final RadioGroup group = (RadioGroup) getView().findViewById(R.id.buses_list);
+			//because theyre ID's are sequential and from zero
+			selected = group.getCheckedRadioButtonId();
+			
 			super.onPreExecute();
 		}
 		@Override
 		protected JSONObject doInBackground(Void... params) {
-			Network connection = new Network(Common.SERVER_URL + "validate", "POST", elems);
+			JSONObject tmpobject = new JSONObject();
+			try {
+				tmpobject.accumulate("cid", cid);
+				tmpobject.accumulate("tid", tid);
+			} catch (JSONException e){}
+			
+			BTFunctions.createsocket(btDeviceList.get(selected).getAddress());
+			BTFunctions.write(tmpobject.toString());
+			Object read = BTFunctions.read();
+			BTFunctions.disconnect();
+			Network connection = new Network(Common.SERVER_URL + "validate", "POST", null);
 			connection.run();
 			return connection.getResultObject();
 		}
 		protected void onPostExecute(JSONObject result) {
-			validateTicketLocally(elems.get(0).getValue());
+			validateTicketLocally(tid);
 		}
+		
+		public AsyncUseTickets(String type)
+		{
+			this.type = type;
+		}
+		
 		public void validateTicketLocally(String tid)
 		{
 			try {

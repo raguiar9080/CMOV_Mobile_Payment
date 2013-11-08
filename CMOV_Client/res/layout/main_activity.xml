@@ -9,11 +9,7 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context=".MainActivity" >
     
-    <ImageView
-        android:id="@+id/imageView1"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:src="@drawable/ic_launcher" />
+    
 
     <android.support.v4.view.ViewPager
         android:id="@+id/ViewPager"

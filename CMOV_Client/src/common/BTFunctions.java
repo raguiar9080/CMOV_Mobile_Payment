@@ -1,6 +1,7 @@
 package common;
 
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -96,6 +97,20 @@ public class BTFunctions {
 		return;
 	}
 
+	public static Object read() {
+        try {
+        		ObjectInputStream in=new ObjectInputStream(socket.getInputStream());
+                Object object = in.readObject();
+                return object;
+        }
+        catch (Exception e)
+        {
+        	Log.e("ERROR", e.toString());
+			e.printStackTrace();
+            return null;
+        }
+}
+	
 	public static boolean write(Object o)
 	{
 		try{
