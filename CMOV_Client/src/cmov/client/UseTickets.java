@@ -2,13 +2,12 @@ package cmov.client;
 
 import java.io.FileInputStream;
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.List;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONObject;
 
-import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
@@ -18,11 +17,12 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Parcelable;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -32,31 +32,29 @@ import common.Network;
 
 public class UseTickets extends ListTickets {
 
-	private static final int REQUEST_ENABLE_BT = 0;
-	private static final int REQUEST_DISCOVERABLE_BT = 1;
-	private ArrayList<BluetoothDevice> btDeviceList = new ArrayList<BluetoothDevice>();
-
-	@Override
-	public void onActivityResult(int requestCode, int resultCode, Intent data) {
-		if (requestCode == REQUEST_DISCOVERABLE_BT && resultCode == Activity.RESULT_OK) {
-			Context context = getActivity().getApplicationContext();
-			CharSequence text = "MAKING YOUR DEVICE DISCOVERABLE";
-			int duration = Toast.LENGTH_SHORT;
-
-			Toast toast = Toast.makeText(context, text, duration);
-			toast.show();
-
-			//Display the modified values
-			//txtVal1.setText(data.getExtras().getString("Val1"));
-			//txtVal2.setText(data.getExtras().getString("Val2"));
-		}
-		super.onActivityResult(requestCode, resultCode, data);
-	}
-
+	List<BluetoothDevice> btDeviceList = new ArrayList<BluetoothDevice>();
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		View view = super.onCreateView(inflater, container, savedInstanceState);
+		final View view = inflater.inflate(R.layout.use_tickets, container, false);
+
+		//Get UserdID
+		SharedPreferences settings = this.getActivity().getSharedPreferences(Common.PREFS_NAME, Context.MODE_PRIVATE);
+		if(settings.getString("T1", null)!=null && settings.getString("T2", null)!=null && settings.getString("T3", null)!=null &&settings.getString("TimeUpdated", null)!=null)
+		{
+			((TextView) view.findViewById(R.id.t1Number)).setText(settings.getString("T1", null));
+			((TextView) view.findViewById(R.id.t2Number)).setText(settings.getString("T2", null));
+			((TextView) view.findViewById(R.id.t3Number)).setText(settings.getString("T3", null));
+			((TextView) view.findViewById(R.id.lastUpdated)).setText(settings.getString("TimeUpdated", null));
+		}
+		
+		final Button refreshlisttickets = (Button) view.findViewById(R.id.refreshlist_tickets);
+		refreshlisttickets.setOnClickListener(new View.OnClickListener() {
+			public void onClick(View v) {
+				new AsyncListTickets().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+				new AsyncListBuses().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+			}
+		});
 
 		//Override to Buy When Selected
 		final TextView t1Number = (TextView) view.findViewById(R.id.t1Number);
@@ -77,11 +75,116 @@ public class UseTickets extends ListTickets {
 				new AsyncUseTickets("T3").execute();
 			}
 		});
+		PopulateBuses(view);
+		
 		return view;
 	}
+	
+	@Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        //outState.put("buses_list", btDeviceList);
+    }
+
+	private void PopulateBuses(View view)
+	{
+		//populate buses
+		final RadioGroup group = (RadioGroup) view.findViewById(R.id.buses_list);
+		group.removeAllViews();
+		for(BluetoothDevice device : btDeviceList)
+		{
+			//TODO
+			//if(device.getName() != null && device.getName().equals("Xperia neo"))
+			//{
+				RadioButton tmprb = new RadioButton(getActivity().getBaseContext());
+				tmprb.setText(device.getName());
+				tmprb.setId(group.getChildCount());
+				group.addView(tmprb);
+			//}
+		}
+
+	}
+
+	private class AsyncListBuses extends AsyncTask<Void, Void, Void> {
+		private static final int MAXIMUM_TIMEOUT_TRIES = 100;
+		private static final int CONNECTION_CHECK_TIMEOUT = 350;
+
+		@Override
+		protected void onPreExecute() {
+			super.onPreExecute();
+		}
+		@Override
+		protected Void doInBackground(Void... params) {
+			try{getActivity().unregisterReceiver(ActionFoundReceiver);}catch (Exception e){}
+
+			//Register the BroadcastReceiver
+			IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
+			filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED);
+			filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
+			getActivity().registerReceiver(ActionFoundReceiver, filter); // Don't forget to unregister during onDestroy
+
+			if (!BTFunctions.isBluetoothAvailable())
+			{
+				Toast.makeText(getActivity().getBaseContext(), "DEVICE DOES NOT SUPPORT BLUETOOTH. CANNOT CONTINUE.", Toast.LENGTH_LONG).show();
+				return null;
+			}
+			BTFunctions.btEnable(getActivity(), 0);
+			BTFunctions.startdiscover();
+			int retries = 0;
+			while(!BTFunctions.isFinishedDiscovering && retries < MAXIMUM_TIMEOUT_TRIES)
+			{
+				try {
+					Thread.sleep(CONNECTION_CHECK_TIMEOUT);
+				} catch (InterruptedException e) {}
+				retries++;
+			}
+
+			if(!(retries < MAXIMUM_TIMEOUT_TRIES))
+				Toast.makeText(getActivity().getBaseContext(), "TIMEOUT REACHED", Toast.LENGTH_LONG).show();
+			return null;
+		}
+
+		@Override
+		protected void onPostExecute(Void result) {
+			getActivity().unregisterReceiver(ActionFoundReceiver);
+			PopulateBuses(getView());
+		}
+
+		private final BroadcastReceiver ActionFoundReceiver = new BroadcastReceiver(){
+
+			@Override
+			public void onReceive(Context context, Intent intent) {
+				String action = intent.getAction();
+				if(BluetoothDevice.ACTION_FOUND.equals(action))
+				{
+					BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+					btDeviceList.add(device);
+				}
+				else
+				{
+					if(!BluetoothDevice.ACTION_UUID.equals(action))
+					{
+						if(BluetoothAdapter.ACTION_DISCOVERY_STARTED.equals(action))
+						{
+							btDeviceList.clear();
+						}
+						else
+						{
+							if(BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action))
+							{
+								BTFunctions.stopdiscover();
+							}
+						}
+					}
+				}
+			}
+		};
+	}
+
 
 	private class AsyncUseTickets extends AsyncTask<Void, Void,  JSONObject> {
 		private ArrayList<NameValuePair> elems = new ArrayList<NameValuePair>();
+
 		public AsyncUseTickets(String type)
 		{
 			try {
@@ -119,63 +222,14 @@ public class UseTickets extends ListTickets {
 		}
 		@Override
 		protected JSONObject doInBackground(Void... params) {
-
-			//Register the BroadcastReceiver
-			IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
-			filter.addAction(BluetoothDevice.ACTION_UUID);
-			filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED);
-			filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
-			getActivity().registerReceiver(ActionFoundReceiver, filter); // Don't forget to unregister during onDestroy
-
-			if (!BTFunctions.isBluetoothAvailable())
-				return null;
-			
-			BTFunctions.btEnable(getActivity(), 0);
-
-			BTFunctions.startdiscover();
-			
 			Network connection = new Network(Common.SERVER_URL + "validate", "POST", elems);
 			connection.run();
 			return connection.getResultObject();
 		}
 		protected void onPostExecute(JSONObject result) {
-			getActivity().unregisterReceiver(ActionFoundReceiver);
-
-			validateTicket(elems.get(0).getValue());
-			/*//fragment is not active on screen.
-			if(getActivity() == null || getView() == null)
-				return;
-			try {
-				if (result == null)
-					Toast.makeText(getActivity().getBaseContext(), "Error Fetching Data", Toast.LENGTH_LONG).show();
-				else if (result.has("error"))
-					Toast.makeText(getActivity().getBaseContext(), result.get("error").toString(), Toast.LENGTH_LONG).show();
-				else
-				{
-					Integer t1=0,
-							t2=0,
-							t3=0;
-
-					JSONArray tickets = result.getJSONArray("status");
-					for (int i = 0; i < tickets.length(); i++)
-					{
-						if(((JSONObject)tickets.get(i)).get("type").equals("T1"))
-							t1++;
-						else if(((JSONObject)tickets.get(i)).get("type").equals("T2"))
-							t2++;
-						else 
-							t3++;
-					}
-					((TextView) getView().findViewById(R.id.t1Number)).setText(Integer.valueOf(t1).toString());
-					((TextView) getView().findViewById(R.id.t2Number)).setText(Integer.valueOf(t2).toString());
-					((TextView) getView().findViewById(R.id.t3Number)).setText(Integer.valueOf(t3).toString());
-
-				}
-			} catch (JSONException e) {
-				e.printStackTrace();
-			}*/
+			validateTicketLocally(elems.get(0).getValue());
 		}
-		public void validateTicket(String tid)
+		public void validateTicketLocally(String tid)
 		{
 			try {
 				FileInputStream fis;
@@ -197,59 +251,13 @@ public class UseTickets extends ListTickets {
 						break;
 					}
 				}
-				//if it gets here you don't have valid tickets
+				//if it gets here you don't have valid tickets but server said so :S
 
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
-
-		private final BroadcastReceiver ActionFoundReceiver = new BroadcastReceiver(){
-
-			@Override
-			public void onReceive(Context context, Intent intent) {
-				String action = intent.getAction();
-				if(BluetoothDevice.ACTION_FOUND.equals(action)) {
-					BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-					if(device.getName().equals("TOSHIBA-PC"))
-					{
-						BTFunctions.stopdiscover();
-						BTFunctions.createsocket(device.getAddress());
-						BTFunctions.write("LOLITA");
-						
-					}
-					//out.append("\n  Device: " + device.getName() + ", " + device);
-					btDeviceList.add(device);
-				} else {
-					if(BluetoothDevice.ACTION_UUID.equals(action)) {
-						BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-						Parcelable[] uuidExtra = intent.getParcelableArrayExtra(BluetoothDevice.EXTRA_UUID);
-						for (int i=0; i<uuidExtra.length; i++) {
-							//out.append("\n  Device: " + device.getName() + ", " + device + ", Service: " + uuidExtra[i].toString());
-						}
-					} else {
-						if(BluetoothAdapter.ACTION_DISCOVERY_STARTED.equals(action)) {
-							//out.append("\nDiscovery Started...");
-						} else {
-							if(BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
-								//out.append("\nDiscovery Finished");
-								Iterator<BluetoothDevice> itr = btDeviceList.iterator();
-								while (itr.hasNext()) {
-									// Get Services for paired devices
-									BluetoothDevice device = itr.next();
-									//out.append("\nGetting Services for " + device.getName() + ", " + device);
-									//if(!device.fetchUuidsWithSdp()) {
-										//out.append("\nSDP Failed for " + device.getName());
-									//}
-
-								}
-							}
-						}
-					}
-				}
-			}
-		};
 	}
 }
 

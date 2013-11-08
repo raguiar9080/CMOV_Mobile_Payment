@@ -36,34 +36,25 @@ public class ListTickets extends Fragment {
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		// Inflate the layout for this fragment
 		final View view = inflater.inflate(R.layout.list_tickets, container, false);
+		
+		//Get UserdID
+		SharedPreferences settings = this.getActivity().getSharedPreferences(Common.PREFS_NAME, Context.MODE_PRIVATE);
+		if(settings.getString("T1", null)!=null && settings.getString("T2", null)!=null && settings.getString("T3", null)!=null &&settings.getString("TimeUpdated", null)!=null)
+		{
+			((TextView) view.findViewById(R.id.t1Number)).setText(settings.getString("T1", null));
+			((TextView) view.findViewById(R.id.t2Number)).setText(settings.getString("T2", null));
+			((TextView) view.findViewById(R.id.t3Number)).setText(settings.getString("T3", null));
+			((TextView) view.findViewById(R.id.lastUpdated)).setText(settings.getString("TimeUpdated", null));
+		}
+		
 		final Button refreshlisttickets = (Button) view.findViewById(R.id.refreshlist_tickets);
 		refreshlisttickets.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View v) {
 				new AsyncListTickets().execute();
 			}
 		});
+
 		return view;
-	}
-
-	@Override
-	public void onResume() {
-		//Get UserdID
-		SharedPreferences settings = this.getActivity().getSharedPreferences(Common.PREFS_NAME, Context.MODE_PRIVATE);
-
-		if(settings.getString("T1", null)!=null && settings.getString("T2", null)!=null && settings.getString("T3", null)!=null &&settings.getString("TimeUpdated", null)!=null)
-		{
-			((TextView) getView().findViewById(R.id.t1Number)).setText(settings.getString("T1", null));
-			((TextView) getView().findViewById(R.id.t2Number)).setText(settings.getString("T2", null));
-			((TextView) getView().findViewById(R.id.t3Number)).setText(settings.getString("T3", null));
-			((TextView) getView().findViewById(R.id.lastUpdated)).setText(settings.getString("TimeUpdated", null));
-		}
-		super.onResume();
-	}
-
-	@Override
-	public void onPause() {
-		// TODO Auto-generated method stub
-		super.onPause();
 	}
 
 	public class AsyncListTickets extends AsyncTask<Void, Void,  JSONObject> {
@@ -119,7 +110,7 @@ public class ListTickets extends Fragment {
 
 			JSONArray tickets = result.getJSONArray("status");
 			String now = DateUtils.now();			
-			
+
 			FileOutputStream fos = getActivity().openFileOutput(Common.FILENAME, Context.MODE_PRIVATE);
 			fos.write(now.getBytes());
 			fos.write(new String("\n").getBytes());
@@ -137,7 +128,7 @@ public class ListTickets extends Fragment {
 					t3++;
 			}
 			fos.close();
-			
+
 			//Set UserID & Number of tickets for speed
 			SharedPreferences settings = getActivity().getSharedPreferences(Common.PREFS_NAME, Context.MODE_PRIVATE);
 			SharedPreferences.Editor editor = settings.edit();
@@ -147,10 +138,10 @@ public class ListTickets extends Fragment {
 			editor.putString("TimeUpdated", now);
 			// Commit the edits!
 			editor.commit();
-			
-			
-			
-			
+
+
+
+
 			//return to be presented on screen if active
 			ArrayList<String> tmp = new ArrayList<String>();
 			tmp.add(t1.toString());

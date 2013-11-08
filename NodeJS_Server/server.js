@@ -283,23 +283,34 @@ app.post("/getValidatedTickets",function(req,res){
 	var bid=Number(req.body.bid);
 	if (!bid)
 		respondToJSON( req, res, {error: 'Bad request'}, 400 );
-	else {
-		db.getValidatedTickets(bid,function(rows){
-			var code = 200;
-			var out={};
-			if (!rows)
-			{
-				out.error = 'Something went wrong getting validated';
-				console.log('Fail get validated tickets: ',bid);
+	else
+	{
+		db.getValidatedTickets(bid, function(err,row) {
+			var out = {},
+			code;
+
+			if( err ) {
+				code = 500;
+				out.error = 'Impossible to list validated tickest';
+				out.status=false;
+				console.log('Error listing validated tickets: ' + err);
 			}
-			else
-			{
-				out.list=rows;
-				console.log('validated clients: ',bid, ' ',JSON.stringify( out ));
+			else {
+				code = 200;
+				if (!row)
+				{
+					out.status=[];
+					console.log('Fail listing validated: ',bid);
+				}
+				else
+				{
+					out.status=row;
+					console.log('listing validated ticket: ',bid);
+				}
 			}
-			
 
 			respondToJSON( req, res, out, code );
+
 		});
 	}
 });
