@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Terminal</string>
+    <string name="action_settings">Action Settings</string>
+    <string name="welcome_pt">Bem vindo ao autocarro nº</string>
+    <string name="welcome_en">Welcome to the bus number</string>
+    <string name="instruction_pt">Por favor valide o seu bilhete</string>
+    <string name="instruction_en">Please validate your ticket</string>
+    <string name="test">Test</string>
+    <string name="img_des">QR Code</string>
+    <string name="placeholder_number">9235</string>
+    <string name="onOff">Service On/Off</string>
+    <string name="cmov">CMOV 2013</string>
+
+</resources>

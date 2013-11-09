@@ -1,0 +1,74 @@
+<RelativeLayout	xmlns:android="http://schemas.android.com/apk/res/android"
+		    xmlns:tools="http://schemas.android.com/tools"
+		    android:layout_width="match_parent"
+		    android:layout_height="match_parent"
+		    android:paddingBottom="@dimen/activity_vertical_margin"
+		    android:paddingLeft="@dimen/activity_horizontal_margin"
+		    android:paddingRight="@dimen/activity_horizontal_margin"
+		    android:paddingTop="@dimen/activity_vertical_margin"
+		    tools:context=".MainActivity"
+	        android:id="@+id/masterLayout"
+            >
+
+            <TextView
+                android:id="@+id/welcomeEn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/number_vertical_padding"
+                android:layout_centerHorizontal="true"
+                android:gravity="center"
+                android:paddingBottom="@dimen/text_vertical_padding"
+                android:paddingTop="@dimen/text_vertical_padding"
+                android:text="@string/welcome_en"
+                android:textAppearance="?android:attr/textAppearanceMedium" />
+
+            <TextView
+                android:id="@+id/numberText"
+                android:layout_below="@id/welcomeEn"
+                android:layout_centerHorizontal="true"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:paddingBottom="@dimen/number_vertical_padding"
+                android:paddingTop="@dimen/number_vertical_padding"
+                android:text="@string/placeholder_number"
+                android:textAppearance="?android:attr/textAppearanceLarge" />
+
+            <TextView
+                android:id="@+id/insEn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/numberText"
+                android:layout_centerHorizontal="true"
+                android:paddingBottom="@dimen/text_vertical_padding"
+                android:paddingTop="@dimen/text_vertical_padding"
+                android:text="@string/instruction_en"
+                android:textAppearance="?android:attr/textAppearanceMedium" />
+
+            <Button
+                android:id="@+id/serviceBtn" 
+                android:layout_marginLeft="@dimen/btn_horizontal_margin"   
+                android:layout_marginRight="@dimen/btn_horizontal_margin" 
+                android:layout_marginTop="@dimen/activity_vertical_margin"
+                android:layout_marginBottom="@dimen/activity_vertical_margin"                           
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:layout_below="@id/insEn"
+                android:gravity="left|bottom"
+                android:fontFamily="sans-serif-light"
+        		android:textSize="@dimen/font_size"
+        		android:background="@color/btn_background"
+        		android:textColor="@color/btn_text"
+                android:text="@string/onOff" />
+
+            <TextView
+                android:id="@+id/textBottom"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:layout_centerHorizontal="true"
+                android:text="@string/cmov" />
+
+</RelativeLayout>
+
