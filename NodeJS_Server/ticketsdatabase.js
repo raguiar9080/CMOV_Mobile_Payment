@@ -216,7 +216,7 @@ sqliteDB.prototype.buyTickets=function(clientID,t1,t2,t3,callback)
 	}
 	var ts=timestamp();
 	
-	ticketConn.parallelize(function(){
+	ticketConn.parallelize(function(err,row){
 		for (var i=0;i<t3;i++)
 		{
 			ticketConn.run("INSERT INTO transactions (cid,tid, dateBought) VALUES (?,3,?);",[clientID,ts]);

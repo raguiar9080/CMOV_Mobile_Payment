@@ -30,10 +30,17 @@ public class BuyTickets extends Fragment {
 		// Inflate the layout for this fragment
 		final View view = inflater.inflate(R.layout.buy_tickets, container, false);
 
-		final Button buytickets = (Button) view.findViewById(R.id.preparebuybtn);
-		buytickets.setOnClickListener(new View.OnClickListener() {
+		final Button preparebuytickets = (Button) view.findViewById(R.id.preparebuybtn);
+		preparebuytickets.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View v) {
 				new AsyncPrepareBuyTickets().execute();
+			}
+		});
+		
+		final Button buytickets = (Button) view.findViewById(R.id.buybtn);
+		buytickets.setOnClickListener(new View.OnClickListener() {
+			public void onClick(View v) {
+				new AsyncBuyTickets().execute();
 			}
 		});
 
@@ -93,8 +100,6 @@ public class BuyTickets extends Fragment {
 		private ArrayList<NameValuePair> elems = new ArrayList<NameValuePair>();
 		@Override
 		protected void onPreExecute() {
-			SharedPreferences settings = getActivity().getSharedPreferences(Common.PREFS_NAME, Context.MODE_PRIVATE);
-			
 			elems.add(new BasicNameValuePair("t1",(String) ((TextView) getView().findViewById(R.id.t1label)).getText()));
 			elems.add(new BasicNameValuePair("t2",(String) ((TextView) getView().findViewById(R.id.t2label)).getText()));
 			elems.add(new BasicNameValuePair("t3",(String) ((TextView) getView().findViewById(R.id.t3label)).getText()));
@@ -131,7 +136,7 @@ public class BuyTickets extends Fragment {
 		protected void onPreExecute() {
 			SharedPreferences settings = getActivity().getSharedPreferences(Common.PREFS_NAME, Context.MODE_PRIVATE);
 			
-			elems.add(new BasicNameValuePair("t1",settings.getString("UserID", null)));
+			elems.add(new BasicNameValuePair("cid",settings.getString("UserID", null)));
 			elems.add(new BasicNameValuePair("t1",(String) ((TextView) getView().findViewById(R.id.t1label)).getText()));
 			elems.add(new BasicNameValuePair("t2",(String) ((TextView) getView().findViewById(R.id.t2label)).getText()));
 			elems.add(new BasicNameValuePair("t3",(String) ((TextView) getView().findViewById(R.id.t3label)).getText()));
