@@ -32,15 +32,6 @@ public class ListTickets extends Fragment {
 		// Inflate the layout for this fragment
 		final View view = inflater.inflate(R.layout.list_tickets, container, false);
 		
-		SharedPreferences settings = this.getActivity().getSharedPreferences(Common.PREFS_NAME, Context.MODE_PRIVATE);
-		if(settings.getString("T1", null)!=null && settings.getString("T2", null)!=null && settings.getString("T3", null)!=null &&settings.getString("TimeUpdated", null)!=null)
-		{
-			((TextView) view.findViewById(R.id.t1Number)).setText(settings.getString("T1", null));
-			((TextView) view.findViewById(R.id.t2Number)).setText(settings.getString("T2", null));
-			((TextView) view.findViewById(R.id.t3Number)).setText(settings.getString("T3", null));
-			((TextView) view.findViewById(R.id.lastUpdated)).setText(settings.getString("TimeUpdated", null));
-		}
-		
 		final Button refreshlisttickets = (Button) view.findViewById(R.id.refreshlist_tickets);
 		refreshlisttickets.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View v) {
@@ -49,6 +40,19 @@ public class ListTickets extends Fragment {
 		});
 
 		return view;
+	}
+
+	@Override
+	public void onResume() {
+		SharedPreferences settings = this.getActivity().getSharedPreferences(Common.PREFS_NAME, Context.MODE_PRIVATE);
+		if(settings.getString("T1", null)!=null && settings.getString("T2", null)!=null && settings.getString("T3", null)!=null &&settings.getString("TimeUpdated", null)!=null)
+		{
+			((TextView) getView().findViewById(R.id.t1Number)).setText(settings.getString("T1", null));
+			((TextView) getView().findViewById(R.id.t2Number)).setText(settings.getString("T2", null));
+			((TextView) getView().findViewById(R.id.t3Number)).setText(settings.getString("T3", null));
+			((TextView) getView().findViewById(R.id.lastUpdated)).setText(settings.getString("TimeUpdated", null));
+		}
+		super.onResume();
 	}
 
 	public class AsyncListTickets extends AsyncTask<Void, Void,  JSONObject> {

@@ -205,6 +205,10 @@ sqliteDB.prototype.buyTickets=function(clientID,t1,t2,t3,callback)
 	if ( typeof callback !== 'function')
 		throw new Error('Callback is not a function');	
 	var count = t1 + t2 + t3;
+	var out = {};
+	out.price = t1 + 2*t2 + 3*t3;
+
+	//adding bonus
 	if (count >= 10)
 	{
 		if(t1 > 0 )
@@ -232,7 +236,10 @@ sqliteDB.prototype.buyTickets=function(clientID,t1,t2,t3,callback)
 
 		}
 	});
-	callback(null,null);
+	out.t1 = t1;
+	out.t2 = t2;
+	out.t3 = t3;
+	callback(null,out);
 }
 
 sqliteDB.prototype.getValidatedTickets=function(busId,callback)

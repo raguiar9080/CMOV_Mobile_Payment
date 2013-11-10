@@ -36,7 +36,7 @@ public class BuyTickets extends Fragment {
 				new AsyncPrepareBuyTickets().execute();
 			}
 		});
-		
+
 		final Button buytickets = (Button) view.findViewById(R.id.buybtn);
 		buytickets.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View v) {
@@ -85,17 +85,6 @@ public class BuyTickets extends Fragment {
 		return view;
 	}
 
-	@Override
-	public void onResume() {
-		super.onResume();
-	}
-
-	@Override
-	public void onPause() {
-		// TODO Auto-generated method stub
-		super.onPause();
-	}
-
 	private class AsyncPrepareBuyTickets extends AsyncTask<Void, Void,  JSONObject> {
 		private ArrayList<NameValuePair> elems = new ArrayList<NameValuePair>();
 		@Override
@@ -122,20 +111,24 @@ public class BuyTickets extends Fragment {
 				else if (result.has("error"))
 					Toast.makeText(getActivity().getBaseContext(), result.get("error").toString(), Toast.LENGTH_LONG).show();	
 				else
-					//TODO
-					Toast.makeText(getActivity().getApplicationContext(),result.toString() , Toast.LENGTH_LONG).show();
+				{
+					((TextView) getView().findViewById(R.id.pricelabel)).setText(result.getJSONObject("info").getString("price") + "€");
+					String tmp ="T1:" + result.getJSONObject("info").getString("t1") + " T2:" + result.getJSONObject("info").getString("t2") + " T3:" + result.getJSONObject("info").getString("t3");
+					((TextView) getView().findViewById(R.id.tickets)).setText(tmp);
+				}
+				//Toast.makeText(getActivity().getApplicationContext(),result.toString() , Toast.LENGTH_LONG).show();
 			} catch (JSONException e) {
 				e.printStackTrace();
 			}
 		}
 	}
-	
+
 	private class AsyncBuyTickets extends AsyncTask<Void, Void,  JSONObject> {
 		private ArrayList<NameValuePair> elems = new ArrayList<NameValuePair>();
 		@Override
 		protected void onPreExecute() {
 			SharedPreferences settings = getActivity().getSharedPreferences(Common.PREFS_NAME, Context.MODE_PRIVATE);
-			
+
 			elems.add(new BasicNameValuePair("cid",settings.getString("UserID", null)));
 			elems.add(new BasicNameValuePair("t1",(String) ((TextView) getView().findViewById(R.id.t1label)).getText()));
 			elems.add(new BasicNameValuePair("t2",(String) ((TextView) getView().findViewById(R.id.t2label)).getText()));
@@ -159,7 +152,22 @@ public class BuyTickets extends Fragment {
 				else if (result.has("error"))
 					Toast.makeText(getActivity().getBaseContext(), result.get("error").toString(), Toast.LENGTH_LONG).show();	
 				else
-					Toast.makeText(getActivity().getApplicationContext(),result.toString() , Toast.LENGTH_LONG).show();
+				{
+					((TextView) getView().findViewById(R.id.pricelabel)).setText(result.getJSONObject("info").getString("price") + "€");
+					String tmp ="T1:" + result.getJSONObject("info").getString("t1") + " T2:" + result.getJSONObject("info").getString("t2") + " T3:" + result.getJSONObject("info").getString("t3");
+					((TextView) getView().findViewById(R.id.tickets)).setText(tmp);
+					SharedPreferences settings = getActivity().getSharedPreferences(Common.PREFS_NAME, Context.MODE_PRIVATE);
+					SharedPreferences.Editor editor = settings.edit();
+
+					editor.putString("T1", ((Integer) (Integer.valueOf(settings.getString("T1", null)) + Integer.valueOf(elems.get(1).getValue()))).toString());
+					editor.putString("T2", ((Integer) (Integer.valueOf(settings.getString("T2", null)) + Integer.valueOf(elems.get(2).getValue()))).toString());
+					editor.putString("T3", ((Integer) (Integer.valueOf(settings.getString("T3", null)) + Integer.valueOf(elems.get(3).getValue()))).toString());
+					editor.putString("TimeUpdated", "LOCAL");
+					editor.commit();
+					
+					Toast.makeText(getActivity().getApplicationContext(), "Tickets Successfully Bought" , Toast.LENGTH_LONG).show();
+				}
+				//Toast.makeText(getActivity().getApplicationContext(),result.toString() , Toast.LENGTH_LONG).show();
 			} catch (JSONException e) {
 				e.printStackTrace();
 			}

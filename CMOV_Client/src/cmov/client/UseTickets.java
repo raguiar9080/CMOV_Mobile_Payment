@@ -39,15 +39,6 @@ public class UseTickets extends ListTickets {
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		final View view = inflater.inflate(R.layout.use_tickets, container, false);
 
-		SharedPreferences settings = this.getActivity().getSharedPreferences(Common.PREFS_NAME, Context.MODE_PRIVATE);
-		if(settings.getString("T1", null)!=null && settings.getString("T2", null)!=null && settings.getString("T3", null)!=null &&settings.getString("TimeUpdated", null)!=null)
-		{
-			((TextView) view.findViewById(R.id.t1Number)).setText(settings.getString("T1", null));
-			((TextView) view.findViewById(R.id.t2Number)).setText(settings.getString("T2", null));
-			((TextView) view.findViewById(R.id.t3Number)).setText(settings.getString("T3", null));
-			((TextView) view.findViewById(R.id.lastUpdated)).setText(settings.getString("TimeUpdated", null));
-		}
-
 		final Button refreshlisttickets = (Button) view.findViewById(R.id.refreshlist_tickets);
 		refreshlisttickets.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View v) {
@@ -61,7 +52,6 @@ public class UseTickets extends ListTickets {
 				new AsyncListBuses().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 			}
 		});
-
 
 		//Override to Buy When Selected
 		final TextView t1Number = (TextView) view.findViewById(R.id.t1Number);
@@ -85,6 +75,19 @@ public class UseTickets extends ListTickets {
 		PopulateBuses(view);
 
 		return view;
+	}
+
+	@Override
+	public void onResume() {
+		SharedPreferences settings = this.getActivity().getSharedPreferences(Common.PREFS_NAME, Context.MODE_PRIVATE);
+		if(settings.getString("T1", null)!=null && settings.getString("T2", null)!=null && settings.getString("T3", null)!=null &&settings.getString("TimeUpdated", null)!=null)
+		{
+			((TextView) getView().findViewById(R.id.t1Number)).setText(settings.getString("T1", null));
+			((TextView) getView().findViewById(R.id.t2Number)).setText(settings.getString("T2", null));
+			((TextView) getView().findViewById(R.id.t3Number)).setText(settings.getString("T3", null));
+			((TextView) getView().findViewById(R.id.lastUpdated)).setText(settings.getString("TimeUpdated", null));
+		}
+		super.onResume();
 	}
 
 	private void PopulateBuses(View view)
@@ -280,7 +283,8 @@ public class UseTickets extends ListTickets {
 			
 			editor.putString("LastTicket", key);
 			editor.putString("TimeUpdated", "LOCAL");
-			
+			editor.commit();
+
 			if(settings.getString("T1", null)!=null && settings.getString("T2", null)!=null && settings.getString("T3", null)!=null &&settings.getString("TimeUpdated", null)!=null)
 			{
 				((TextView) getView().findViewById(R.id.t1Number)).setText(settings.getString("T1", null));
@@ -288,8 +292,6 @@ public class UseTickets extends ListTickets {
 				((TextView) getView().findViewById(R.id.t3Number)).setText(settings.getString("T3", null));
 				((TextView) getView().findViewById(R.id.lastUpdated)).setText(settings.getString("TimeUpdated", null));
 			}
-			// Commit the edits!
-			editor.commit();
 		}
 	}
 }

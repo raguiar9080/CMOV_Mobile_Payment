@@ -261,7 +261,7 @@
 					if (!row)
 					{
 						out.error = 'Wrong PARAMS';
-						console.log('Fail buy tickets: ',cid);
+						console.log('Fail prepare buy tickets: ',cid);
 					}
 					else
 					{
@@ -281,15 +281,15 @@
 	// returns {null}
 	app.post('/buyTickets', function (req, res) {
 		console.log('Buyng tickets for:' + req.body.cid + "t1:" + req.body.t1 + "t2:" + req.body.t2 + "t3:" + req.body.t3);
-		var cid = Number(req.body.cid),
-		t1=Number(req.body.t1),
-		t2=Number(req.body.t2),
-		t3=Number(req.body.t3);
 		
-		if( !cid ||!t1||!t2||!t3)
+		if( !req.body.cid||!req.body.t1||!req.body.t2||!req.body.t3)
 			respondToJSON( req, res, {error: 'Bad request'}, 400 );
 
 		else {
+			var cid = Number(req.body.cid),
+			t1=Number(req.body.t1),
+			t2=Number(req.body.t2),
+			t3=Number(req.body.t3);
 			db.buyTickets(cid,t1,t2,t3, function(err,row) {
 				var code;
 				var out = {};
@@ -301,9 +301,17 @@
 				}
 				else {
 					code = 200;
-					out.status = "OK";
-					out.info = row;
-					console.log('TICKETS BOUGHT');
+					if (!row)
+					{
+						out.error = 'Wrong PARAMS';
+						console.log('Fail buy tickets: ',cid);
+					}
+					else
+					{
+						out.status = "OK";
+						out.info = row;
+						console.log('TICKETS BOUGHT: ' + JSON.stringify( row ));
+					}
 				}
 
 				respondToJSON( req, res, out, code );
