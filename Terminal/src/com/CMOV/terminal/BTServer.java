@@ -13,54 +13,62 @@ import android.content.Intent;
 import android.util.Log;
 
 public class BTServer extends IntentService{
-	
+
 	private static final String name = "BTServer";
 	private BluetoothAdapter mBluetoothAdapter = null;
 	private BluetoothServerSocket mmServerSocket = null;
-	
+
 	public static final String NAME="BTServer";
 	public static final UUID MY_UUID=UUID.fromString("f74f7958-eae5-4202-bbfd-8700988f61f5");
 	public static AtomicBoolean running=new AtomicBoolean(false);
 	public static final String ACTION_BLUETOOTH = "org.CMOV.terminal.BTServer";
-		
+
 	private static HashMap<String,BluetoothSocket> sockets=new HashMap<String,BluetoothSocket>();
-	
+
 	public BTServer() {
 		super(name);
 	}
 
 	@Override
 	protected void onHandleIntent(Intent intent) {
-				
+
 		if(running.get()) return;
 		else running.set(true);
-		
+
 		while (running.get()==true)
 		{
 			try {
-				
-				BTServer.resetSockets();
-				
-				mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();			
-				mmServerSocket = mBluetoothAdapter.listenUsingInsecureRfcommWithServiceRecord(NAME, MY_UUID);
-								
-				while(running.get()==true)
+				if (BTFunctions.isBluetoothAvailable())
 				{
-					try {
-						BluetoothSocket client = mmServerSocket.accept(15000);
-						
-						if (client != null) 
-						{
-							BTServer.addSocket(client);
-							Intent notify = new Intent(ACTION_BLUETOOTH);
-							notify.putExtra("address", client.getRemoteDevice().getAddress());
-							Log.d("BTServer","Client Connected");
-							sendBroadcast(notify);
+					BTServer.resetSockets();				
+					mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();			
+					mmServerSocket = mBluetoothAdapter.listenUsingInsecureRfcommWithServiceRecord(NAME, MY_UUID);
+
+					while(running.get()==true)
+					{
+						try {
+							BluetoothSocket client = mmServerSocket.accept(15000);
+
+							if (client != null) 
+							{
+								BTServer.addSocket(client);
+								Intent notify = new Intent(ACTION_BLUETOOTH);
+								notify.putExtra("address", client.getRemoteDevice().getAddress());
+								Log.d("BTServer","Client Connected");
+								sendBroadcast(notify);
+							}
+						} catch (IOException e) {						
+							Log.d("BTServer","There was an error accepting the client request or no one tried to connect");
 						}
-					} catch (IOException e) {						
-						Log.d("BTServer","There was an error accepting the client request or no one tried to connect");
 					}
 				}
+				else
+				{
+					mBluetoothAdapter = null;
+					mmServerSocket = null;					
+					Thread.sleep(5000);	
+				}
+				
 			} 
 			catch (Exception e) 
 			{
@@ -74,7 +82,7 @@ public class BTServer extends IntentService{
 			}
 		}
 	}
-	
+
 	private static void resetSockets() {
 		synchronized (BTServer.sockets) {
 			for (BluetoothSocket socket : BTServer.sockets.values()) {
@@ -87,13 +95,13 @@ public class BTServer extends IntentService{
 			BTServer.sockets.clear();
 		}
 	}
-	
+
 	public void onDestroy() {
 		running.set(false);
 		BTServer.resetSockets();
 		super.onDestroy();
 	}
-		
+
 	public static void addSocket(BluetoothSocket socket)
 	{
 		synchronized (BTServer.sockets) {
@@ -109,7 +117,7 @@ public class BTServer extends IntentService{
 			sockets.put(socket.getRemoteDevice().getAddress(), socket);
 		}		
 	}
-	
+
 	public static BluetoothSocket getSocket(String address) {
 		BluetoothSocket socket = null;
 		synchronized (BTServer.sockets) {
