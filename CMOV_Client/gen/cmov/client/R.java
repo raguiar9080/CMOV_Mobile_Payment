@@ -25,14 +25,15 @@ public final class R {
     }
     public static final class id {
         public static final int ViewPager=0x7f08001b;
-        public static final int action_settings=0x7f08001e;
-        public static final int buses_list=0x7f08001d;
+        public static final int action_settings=0x7f08001f;
+        public static final int buses_list=0x7f08001e;
         public static final int buybtn=0x7f08000a;
         public static final int createLoginUser=0x7f08001a;
         public static final int lastUpdated=0x7f08000e;
         public static final int preparebuybtn=0x7f080009;
         public static final int pricelabel=0x7f08000b;
-        public static final int refreshbuses=0x7f08001c;
+        public static final int refreshbuses=0x7f08001d;
+        public static final int refreshlastticket=0x7f08001c;
         public static final int refreshlist_tickets=0x7f080012;
         public static final int relative=0x7f08000d;
         public static final int seekBarT1=0x7f080001;
@@ -61,7 +62,8 @@ public final class R {
         public static final int list_tickets=0x7f030001;
         public static final int login=0x7f030002;
         public static final int main_activity=0x7f030003;
-        public static final int use_tickets=0x7f030004;
+        public static final int show_last_ticket=0x7f030004;
+        public static final int use_tickets=0x7f030005;
     }
     public static final class menu {
         public static final int main=0x7f070000;
