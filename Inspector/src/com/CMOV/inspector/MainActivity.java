@@ -73,6 +73,7 @@ public class MainActivity extends Activity {
 			Toast.makeText(MainActivity.this, "Starting Camera Activity...", Toast.LENGTH_LONG).show();
 			
 			Intent intent = new Intent(getApplicationContext(), CaptureActivity.class);
+			
 			startActivityForResult(intent, CAPTURE_QR);
 
 		}
@@ -95,6 +96,7 @@ public class MainActivity extends Activity {
 			JSONObject json = new JSONObject(data.getExtras().getCharSequence(CONTENT_QR).toString());
 			String tid=json.getString("tid");
 			String cid=json.getString("cid");
+			Log.d("Recebido: ", json.toString());
 			if (bilhetes.size()==0)
 			{
 				Toast.makeText(this, "There are no validated tickets for this bus!", Toast.LENGTH_LONG).show();
@@ -102,18 +104,23 @@ public class MainActivity extends Activity {
 			}
 			else
 			{
+				boolean found=false;
 				for(int i=0;i<bilhetes.size();i++)
 				{
 					if(tid.equals(Integer.toString(bilhetes.get(i).getTicketID()))&&cid.equals(Integer.toString(bilhetes.get(i).getClientID())))
 					{
 						if(checkTime(bilhetes.get(i).getValidTime(),bilhetes.get(i).getTicketID()))
-						showResult(true);
+						found=true;
 						break;
 					}
 				}
-				showResult(false);
+				if(found)showResult(true);
+				else showResult(false);
 			}
-		} catch (Exception e) {}		
+		} catch (Exception e) 
+		{
+			e.printStackTrace();
+		}		
 	}
 	
 	public void showResult(boolean result)
@@ -139,8 +146,7 @@ public class MainActivity extends Activity {
 				public void onClick(DialogInterface dialog, int which) 
 				{}
 			}).show();
-		}
-		
+		}		
 	}
 
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) 
@@ -158,7 +164,7 @@ public class MainActivity extends Activity {
 	public boolean checkTime(String data, int id)
 	{
 		Date date = null;
-		SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
         try
         {
             date = simpleDateFormat.parse(data);            
@@ -169,17 +175,17 @@ public class MainActivity extends Activity {
         Date temp=new Date();        
         if(id==1)
         {
-        	if(date.getTime()<temp.getTime()-(60000*60)||date.getTime()>temp.getTime())
+        	if(date.getTime()<temp.getTime()-(60000*15)||date.getTime()>temp.getTime())
         		return false;
         }
         else if(id==2)
         {
-        	if(date.getTime()<temp.getTime()-(60000*90)||date.getTime()>temp.getTime())
+        	if(date.getTime()<temp.getTime()-(60000*30)||date.getTime()>temp.getTime())
         		return false;
         }
         else if(id==3)
         {
-        	if(date.getTime()<temp.getTime()-(60000*120)||date.getTime()>temp.getTime())
+        	if(date.getTime()<temp.getTime()-(60000*60)||date.getTime()>temp.getTime())
         		return false;
         }
         return true;
