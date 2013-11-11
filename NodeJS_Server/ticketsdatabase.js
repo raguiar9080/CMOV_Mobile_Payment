@@ -251,7 +251,7 @@ sqliteDB.prototype.getValidatedTickets=function(busId,callback)
 	var out=[];
 	var time=moment().subtract('minutes',90).format("YYYY-MM-DDTHH:mm:ss");
 
-	ticketConn.all("SELECT tid,cid,dateValidated FROM transactions WHERE (tid=1 OR tid=2 OR tid=3) AND bid=? AND dateValidated<?"
+	ticketConn.all("SELECT id,tid,cid,dateValidated FROM transactions WHERE (tid=1 OR tid=2 OR tid=3) AND bid=? AND dateValidated<?"
 		,[busId,time],
 		function (err,row) { //eachfunction
 			console.log(err + " --- " + row);

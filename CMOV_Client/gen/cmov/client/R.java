@@ -25,14 +25,15 @@ public final class R {
     }
     public static final class id {
         public static final int ViewPager=0x7f08001b;
-        public static final int action_settings=0x7f08001f;
-        public static final int buses_list=0x7f08001e;
+        public static final int action_settings=0x7f080020;
+        public static final int buses_list=0x7f08001f;
         public static final int buybtn=0x7f08000a;
         public static final int createLoginUser=0x7f08001a;
         public static final int lastUpdated=0x7f08000e;
         public static final int preparebuybtn=0x7f080009;
         public static final int pricelabel=0x7f08000b;
-        public static final int refreshbuses=0x7f08001d;
+        public static final int qrcode=0x7f08001d;
+        public static final int refreshbuses=0x7f08001e;
         public static final int refreshlastticket=0x7f08001c;
         public static final int refreshlist_tickets=0x7f080012;
         public static final int relative=0x7f08000d;

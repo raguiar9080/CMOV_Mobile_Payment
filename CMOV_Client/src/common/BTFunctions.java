@@ -59,7 +59,7 @@ public class BTFunctions {
 	{
 		//this means we start a new Discovery
 		isFinishedDiscovering = false;
-		
+
 		BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 		mBluetoothAdapter.startDiscovery();
 	}
@@ -67,7 +67,7 @@ public class BTFunctions {
 	public static void stopdiscover()
 	{
 		isFinishedDiscovering = true;
-		
+
 		BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 		mBluetoothAdapter.cancelDiscovery();
 	}
@@ -98,19 +98,19 @@ public class BTFunctions {
 	}
 
 	public static Object read() {
-        try {
-        		ObjectInputStream in=new ObjectInputStream(socket.getInputStream());
-                Object object = in.readObject();
-                return object;
-        }
-        catch (Exception e)
-        {
-        	Log.e("ERROR", e.toString());
+		try {
+			ObjectInputStream in=new ObjectInputStream(socket.getInputStream());
+			Object object = in.readObject();
+			return object;
+		}
+		catch (Exception e)
+		{
+			Log.e("ERROR", e.toString());
 			e.printStackTrace();
-            return null;
-        }
-}
-	
+			return null;
+		}
+	}
+
 	public static boolean write(Object o)
 	{
 		try{

@@ -3,8 +3,6 @@ package cmov.client;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.http.NameValuePair;
-import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -29,7 +27,6 @@ import android.widget.Toast;
 
 import common.BTFunctions;
 import common.Common;
-import common.Network;
 
 public class UseTickets extends ListTickets {
 
@@ -119,12 +116,17 @@ public class UseTickets extends ListTickets {
 
 		@Override
 		protected void onPreExecute() {
+			//clean 
+			BTFunctions.stopdiscover();
+			try{getActivity().unregisterReceiver(ActionFoundReceiver);}catch (Exception e){}
+
+			btDeviceList.clear();
+			PopulateBuses(getView());
 			super.onPreExecute();
 		}
 		@Override
 		protected Void doInBackground(Void... params) {
-			try{getActivity().unregisterReceiver(ActionFoundReceiver);}catch (Exception e){}
-
+			
 			if (!BTFunctions.isBluetoothAvailable())
 			{
 				Log.d("ERROR", "DEVICE DOES NOT SUPPORT BLUETOOTH. CANNOT CONTINUE.");
@@ -157,7 +159,7 @@ public class UseTickets extends ListTickets {
 
 		@Override
 		protected void onPostExecute(Void result) {
-			getActivity().unregisterReceiver(ActionFoundReceiver);
+			try{getActivity().unregisterReceiver(ActionFoundReceiver);} catch(Exception e){e.printStackTrace();}
 		}
 
 		private final BroadcastReceiver ActionFoundReceiver = new BroadcastReceiver(){
@@ -217,13 +219,13 @@ public class UseTickets extends ListTickets {
 		protected JSONObject doInBackground(Void... params) {
 			
 			//TESTING PURPOSES
-			ArrayList<NameValuePair> elems = new ArrayList<NameValuePair>();
+			/*ArrayList<NameValuePair> elems = new ArrayList<NameValuePair>();
 			elems.add(new BasicNameValuePair("cid",cid));
 			elems.add(new BasicNameValuePair("tid",tid));
 			elems.add(new BasicNameValuePair("bid","1"));
 			Network connection = new Network(Common.SERVER_URL + "validate", "POST", elems);
 			connection.run();
-			connection.getResultObject();
+			connection.getResultObject();*/
 			
 			if(selected == -1)
 				return null;
@@ -249,7 +251,8 @@ public class UseTickets extends ListTickets {
 					//we still want to save data even if not active
 					if(result!=null && !result.has("error"))
 					{
-						validateTicketLocally((String) result.get("key"));
+						validateTicketLocally((String) result.get("id"));
+						Toast.makeText(getActivity().getBaseContext(), "SUCESS\nKey:" + result.get("key").toString(), Toast.LENGTH_LONG).show();
 					}
 					return;
 				}
@@ -261,7 +264,8 @@ public class UseTickets extends ListTickets {
 						Toast.makeText(getActivity().getBaseContext(), result.get("error").toString(), Toast.LENGTH_LONG).show();
 					else
 					{
-						validateTicketLocally((String) result.get("key"));
+						validateTicketLocally((String) result.get("id"));
+						Toast.makeText(getActivity().getBaseContext(), "SUCESS\nKey:" + result.get("key").toString(), Toast.LENGTH_LONG).show();
 					}
 				}
 			} catch (Exception e) {
