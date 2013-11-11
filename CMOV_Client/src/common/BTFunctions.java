@@ -101,6 +101,7 @@ public class BTFunctions {
 		try {
 			ObjectInputStream in=new ObjectInputStream(socket.getInputStream());
 			Object object = in.readObject();
+			Log.d("ASDASD", object.toString());
 			return object;
 		}
 		catch (Exception e)

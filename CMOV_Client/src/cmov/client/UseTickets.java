@@ -238,9 +238,13 @@ public class UseTickets extends ListTickets {
 
 			BTFunctions.createsocket(btDeviceList.get(selected).getAddress());
 			BTFunctions.write(tmpobject.toString());
-			JSONObject read = (JSONObject) BTFunctions.read();
+			Object read = BTFunctions.read();
 			BTFunctions.disconnect();
-			return read;
+			JSONObject readjson = null;
+			try {
+				readjson = new JSONObject(read.toString());
+			} catch (JSONException e) {e.printStackTrace();}
+			return readjson;
 		}
 
 		protected void onPostExecute(JSONObject result) {
@@ -251,7 +255,7 @@ public class UseTickets extends ListTickets {
 					//we still want to save data even if not active
 					if(result!=null && !result.has("error"))
 					{
-						validateTicketLocally((String) result.get("id"));
+						validateTicketLocally(result.get("id").toString());
 						Toast.makeText(getActivity().getBaseContext(), "SUCESS\nKey:" + result.get("key").toString(), Toast.LENGTH_LONG).show();
 					}
 					return;
@@ -264,7 +268,7 @@ public class UseTickets extends ListTickets {
 						Toast.makeText(getActivity().getBaseContext(), result.get("error").toString(), Toast.LENGTH_LONG).show();
 					else
 					{
-						validateTicketLocally((String) result.get("id"));
+						validateTicketLocally(result.get("id").toString());
 						Toast.makeText(getActivity().getBaseContext(), "SUCESS\nKey:" + result.get("key").toString(), Toast.LENGTH_LONG).show();
 					}
 				}

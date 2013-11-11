@@ -28,15 +28,14 @@ public class ShowLastTicket extends Fragment {
 		final Button refreshlastticket = (Button) view.findViewById(R.id.refreshlastticket);
 		refreshlastticket.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View v) {
-				onResume();
+				Show();
 			}
 		});
-
+		//onResume();
 		return view;
 	}
 
-	@Override
-	public void onResume() {
+	public void Show() {
 		SharedPreferences settings = this.getActivity().getSharedPreferences(Common.PREFS_NAME, Context.MODE_PRIVATE);
 		if(settings.getString("LastTicket", null)!=null)
 		{
