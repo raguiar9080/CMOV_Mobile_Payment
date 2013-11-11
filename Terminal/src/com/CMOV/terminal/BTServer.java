@@ -16,7 +16,7 @@ public class BTServer extends IntentService{
 
 	private static final String name = "BTServer";
 	private BluetoothAdapter mBluetoothAdapter = null;
-	private BluetoothServerSocket mmServerSocket = null;
+	public static BluetoothServerSocket mmServerSocket = null;
 
 	public static final String NAME="BTServer";
 	public static final UUID MY_UUID=UUID.fromString("f74f7958-eae5-4202-bbfd-8700988f61f5");
@@ -47,7 +47,7 @@ public class BTServer extends IntentService{
 					while(running.get()==true)
 					{
 						try {
-							BluetoothSocket client = mmServerSocket.accept(15000);
+							BluetoothSocket client = mmServerSocket.accept(10000);
 
 							if (client != null) 
 							{
@@ -99,6 +99,12 @@ public class BTServer extends IntentService{
 	public void onDestroy() {
 		running.set(false);
 		BTServer.resetSockets();
+		try {
+			mmServerSocket.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		super.onDestroy();
 	}
 

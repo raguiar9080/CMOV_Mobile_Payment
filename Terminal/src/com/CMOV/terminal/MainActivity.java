@@ -1,5 +1,6 @@
 package com.CMOV.terminal;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 import org.apache.http.NameValuePair;
@@ -176,8 +177,9 @@ public class MainActivity extends Activity {
 	{
 		if(serverOn) {
 			unregisterReceiver(broadcastReceiver);
-			Intent intent=new Intent(this, BTServer.class);
-	    	stopService(intent);
+			BTServer.running.set(false);
+			Intent intent=new Intent(this, BTServer.class);   	
+			stopService(intent);	    	
 	    	serverOn=false;
 	    	Log.d("Main","Closing");
 	    	Toast.makeText(this, "Shutting down the service...", Toast.LENGTH_LONG).show();
